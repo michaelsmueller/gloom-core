@@ -6,23 +6,22 @@ import './Auction.sol';
 
 contract AuctionFactory {
   Auction[] public auctionAddresses;
-  address private owner;
-  address public wtf;
+  address public admin;
 
-  event AuctionCreated(Auction auction);
+  event AuctionCreated(Auction auction, address indexed seller);
 
   constructor() public {
-    owner = msg.sender;
-    wtf = owner;
+    admin = msg.sender;
   }
 
   function getAddresses() public view returns (Auction[] memory) {
     return auctionAddresses;
   }
 
-  function createAuction(uint tokenAmount, address tokenContractAddress, uint startDateTime, uint endDateTime) public returns (address) {
+  function createAuction(uint tokenAmount, address tokenContractAddress, uint startDateTime, uint endDateTime, address seller) public returns (address) {
     Auction auction = new Auction(tokenAmount, tokenContractAddress, startDateTime, endDateTime);
+    auction.registerSeller(seller);
     auctionAddresses.push(auction);
-    emit AuctionCreated(auction);
+    emit AuctionCreated(auction, seller);
   }
 }

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useWeb3Context } from 'web3-react';
 import { ethers } from 'ethers';
-// import Auction from '../contracts/Auction.json';
+import Auction from '../contracts/Auction.json';
 import AuctionFactory from '../contracts/AuctionFactory.json';
 import { AuctionSetup, SellerDeposit, BidderInvites } from '.';
 import Button from '../styles/buttonStyles';
@@ -13,7 +13,7 @@ export default function CreateAuction() {
   const context = useWeb3Context();
   const [factoryContract, setFactoryContract] = useState(null);
   const [auctionAddresses, setAuctionAddresses] = useState([]);
-  // const [auctionContract, setAuctionContract] = useState(null);
+  const [auctionContract, setAuctionContract] = useState(null);
   // const [seller, setSeller] = useState(null);
 
   useEffect(() => context.setFirstValidConnector(['MetaMask']), [context]);
@@ -21,7 +21,7 @@ export default function CreateAuction() {
   if (!active && !error) return <div>loading</div>;
   if (error) return <div>error</div>;
 
-  const { Contract, providers } = ethers;
+  const { Contract, providers, utils } = ethers;
   const provider = new providers.Web3Provider(library.provider);
   const signer = provider.getSigner();
 
@@ -38,7 +38,7 @@ export default function CreateAuction() {
   };
 
   const createAuction = async ({ amount, token, startDate, endDate }) => {
-    const tx = await factoryContract.createAuction(amount, token, startDate, endDate);
+    const tx = await factoryContract.createAuction(amount, token, startDate, endDate, account);
     const receipt = await tx.wait();
     console.log('tx', tx);
     console.log('receipt', receipt);
@@ -52,8 +52,14 @@ export default function CreateAuction() {
   };
 
   // const instantiateAuction = () => {
-  //   const deployedNetwork = Auction.networks[networkId];
-  //   const auctionInstance = new Contract(auctionAddresses[0], Auction.abi, signer);
+  //   console.log('instantiating auction');
+  //   const { networks, abi } = Auction;
+  //   const auctionAdress = auctionAddresses[0];
+  //   const auctionInstance = new Contract(auctionAdress, abi, signer);
+  //   console.log('networks', networks);
+  //   console.log('abi', abi);
+  //   console.log('address', auctionAdress);
+  //   console.log('auctionInstance', auctionInstance);
   //   setAuctionContract(auctionInstance);
   // };
 
@@ -77,8 +83,28 @@ export default function CreateAuction() {
     createAuction(data);
   };
 
-  const fundDeposit = ({ sellerDeposit }) => {
+  const fundDeposit = async ({ sellerDeposit }) => {
+    // await instantiateAuction();
+    console.log('instantiating auction');
+    const { networks, abi } = Auction;
+    const auctionAdress = auctionAddresses[0];
+    const auctionInstance = new Contract(auctionAdress, abi, signer);
+    console.log('networks', networks);
+    console.log('abi', abi);
+    console.log('address', auctionAdress);
+    console.log('auctionInstance', auctionInstance);
+
+    // console.log('auctionContract', auctionContract);
     console.log('sellerDeposit', sellerDeposit);
+    // const wei = utils.parseEther(sellerDeposit).toHexString();
+    const mostRecentContract = auctionAddresses.length - 1;
+    const overrides = {
+      from: account,
+      value: utils.parseEther(sellerDeposit),
+      // chainId: networkId,
+    };
+    console.log('overrides', overrides);
+    auctionInstance.receiveSellerDeposit(overrides);
   };
 
   const inviteBidders = ({ bidderDeposit, bidders }) => {
