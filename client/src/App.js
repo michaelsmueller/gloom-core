@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Web3Provider, { Connectors } from 'web3-react';
 import GlobalStyle from './styles/globalStyles';
-import { CreateAuction, Head } from './components';
+import { Head, AuctionSetup, SellerDeposit, BidderInvites } from './components';
 // import SimpleStorage from './SimpleStorage';
 
 export default function App() {
@@ -15,7 +15,9 @@ export default function App() {
         <Head />
         <GlobalStyle />
         <Switch>
-          <Route exact path='/create-auction' component={CreateAuction} />
+          <Route exact path='/auction-setup' component={AuctionSetup} />
+          <Route exact path='/seller-deposit' component={SellerDeposit} />
+          <Route exact path='/bidder-invites' component={BidderInvites} />
           {/* <Route exact path='/simple-storage' component={SimpleStorage} /> */}
         </Switch>
       </Router>
