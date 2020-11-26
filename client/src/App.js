@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Web3Provider, { Connectors } from 'web3-react';
 import GlobalStyle from './styles/globalStyles';
+import ConnectorProvider from './contexts/connectorProvider';
 import { Head, AuctionSetup, SellerDeposit, BidderInvites } from './components';
 // import SimpleStorage from './SimpleStorage';
 
@@ -11,16 +12,18 @@ export default function App() {
   const connectors = { MetaMask };
   return (
     <Web3Provider connectors={connectors} libraryName='ethers.js'>
-      <Router>
-        <Head />
-        <GlobalStyle />
-        <Switch>
-          <Route exact path='/auctions/setup' component={AuctionSetup} />
-          <Route exact path='/auctions/:id/seller-deposit' component={SellerDeposit} />
-          <Route exact path='/auctions/:id/bidder-invites' component={BidderInvites} />
-          {/* <Route exact path='/simple-storage' component={SimpleStorage} /> */}
-        </Switch>
-      </Router>
+      <ConnectorProvider>
+        <Router>
+          <Head />
+          <GlobalStyle />
+          <Switch>
+            <Route exact path='/auctions/setup' component={AuctionSetup} />
+            <Route exact path='/auctions/:id/seller-deposit' component={SellerDeposit} />
+            <Route exact path='/auctions/:id/bidder-invites' component={BidderInvites} />
+            {/* <Route exact path='/simple-storage' component={SimpleStorage} /> */}
+          </Switch>
+        </Router>
+      </ConnectorProvider>
     </Web3Provider>
   );
 }

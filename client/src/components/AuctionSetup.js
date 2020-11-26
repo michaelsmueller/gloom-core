@@ -1,29 +1,24 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useWeb3Context } from 'web3-react';
 import { ethers } from 'ethers';
-import Auction from '../contracts/Auction.json';
+import { ConnectorContext } from '../contexts/connectorProvider';
 import AuctionFactory from '../contracts/AuctionFactory.json';
-import { AuctionSetupForm, SellerDepositForm, BidderInvitesForm } from '.';
+import { AuctionSetupForm } from '.';
 import Button from '../styles/buttonStyles';
 import { parseLocalDateTime, getLocalDateTime } from '../utils/dateTime';
 
 export default function AuctionSetup() {
-  const context = useWeb3Context();
+  const history = useHistory();
+  const { context } = useContext(ConnectorContext);
+  const { account, active, error, library, networkId } = context;
   const [factoryContract, setFactoryContract] = useState(null);
   const [auctionAddresses, setAuctionAddresses] = useState([]);
-  const [auctionContract, setAuctionContract] = useState(null);
-  const history = useHistory();
-  // const [seller, setSeller] = useState(null);
 
-  useEffect(() => context.setFirstValidConnector(['MetaMask']), [context]);
-  const { account, active, error, library, networkId } = context;
   if (!active && !error) return <div>loading</div>;
-  if (error) return <div>error</div>;
+  if (error) return <div>Error {error.message}</div>;
 
-  const { Contract, providers, utils } = ethers;
+  const { Contract, providers } = ethers;
   const provider = new providers.Web3Provider(library.provider);
   const signer = provider.getSigner();
 
@@ -49,19 +44,6 @@ export default function AuctionSetup() {
       console.log('transaction mined', transaction);
       getAuctions();
     });
-  };
-
-  const instantiateAuction = () => {
-    console.log('instantiating auction');
-    const { networks, abi } = Auction;
-    const mostRecentContract = auctionAddresses.length - 1;
-    const auctionAddress = auctionAddresses[mostRecentContract];
-    const auctionInstance = new Contract(auctionAddress, abi, signer);
-    console.log('networks', networks);
-    console.log('abi', abi);
-    console.log('address', auctionAddress);
-    console.log('auctionInstance', auctionInstance);
-    setAuctionContract(auctionInstance);
   };
 
   const setupAuction = ({ amount, token, startDate, endDate }) => {
