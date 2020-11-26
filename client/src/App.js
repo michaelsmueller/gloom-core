@@ -15,9 +15,9 @@ export default function App() {
         <Head />
         <GlobalStyle />
         <Switch>
-          <Route exact path='/auction-setup' component={AuctionSetup} />
-          <Route exact path='/seller-deposit' component={SellerDeposit} />
-          <Route exact path='/bidder-invites' component={BidderInvites} />
+          <Route exact path='/auctions/setup' component={AuctionSetup} />
+          <Route exact path='/auctions/:id/seller-deposit' component={SellerDeposit} />
+          <Route exact path='/auctions/:id/bidder-invites' component={BidderInvites} />
           {/* <Route exact path='/simple-storage' component={SimpleStorage} /> */}
         </Switch>
       </Router>

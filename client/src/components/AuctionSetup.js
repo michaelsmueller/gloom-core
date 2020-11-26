@@ -44,9 +44,7 @@ export default function AuctionSetup() {
     const receipt = await tx.wait();
     console.log('tx', tx);
     console.log('receipt', receipt);
-    factoryContract.on('AuctionCreated', event => {
-      console.log('AuctionCreated event', event);
-    });
+    factoryContract.on('AuctionCreated', event => console.log('AuctionCreated event', event));
     factoryContract.once(tx, transaction => {
       console.log('transaction mined', transaction);
       getAuctions();
@@ -106,9 +104,11 @@ export default function AuctionSetup() {
 
       <h2>Set up auction</h2>
       <AuctionSetupForm onSubmit={setupAuction} />
-      <Button type='button' onClick={() => history.push('/seller-deposit')}>
-        Make deposit
-      </Button>
+      {auctionAddresses.length ? (
+        <Button type='button' onClick={() => history.push(`/auctions/${auctionAddresses[0]}/seller-deposit`)}>
+          Make deposit
+        </Button>
+      ) : null}
     </div>
   );
 }
