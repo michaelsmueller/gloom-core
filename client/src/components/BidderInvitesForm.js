@@ -31,7 +31,7 @@ export default function BidderInvites({ onSubmit }) {
         <FieldsetTitle>Bidder deposit</FieldsetTitle>
         <Label htmlFor='bidder-deposit'>
           Amount (ETH):
-          <input type='number' id='bidder-deposit' name='bidderDeposit' ref={register} />
+          <input type='number' step='0.001' min='0' id='bidder-deposit' name='bidderDeposit' ref={register} />
         </Label>
       </Fieldset>
 

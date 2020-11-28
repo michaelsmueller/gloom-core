@@ -16,7 +16,7 @@ export default function AuctionSetupForm({ onSubmit }) {
         <FieldsetTitle>Asset to auction</FieldsetTitle>
         <Label htmlFor='amount'>
           Amount (tokens):
-          <input type='number' id='amount' name='amount' ref={register} />
+          <input type='number' step='0.001' min='0' id='amount' name='amount' ref={register} />
         </Label>
         <Label htmlFor='token'>
           ERC-20 token:

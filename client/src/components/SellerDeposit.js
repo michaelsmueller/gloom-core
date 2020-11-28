@@ -1,23 +1,19 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { useWeb3Context } from 'web3-react';
 import { ethers } from 'ethers';
+import { Web3Context } from '../contexts/web3Context';
 import Auction from '../contracts/Auction.json';
 import { SellerDepositForm } from '.';
 import Button from '../styles/buttonStyles';
 
 export default function SellerDeposit() {
-  const context = useWeb3Context();
   const { id: auctionAddress } = useParams();
+  const { web3Context } = useContext(Web3Context);
+  const { account, active, error, library, chainId } = web3Context;
   const [auctionContract, setAuctionContract] = useState(null);
   const history = useHistory();
 
-  useEffect(() => {
-    context.setFirstValidConnector(['MetaMask']);
-  }, [context]);
-  const { account, active, error, library, networkId } = context;
   if (!active && !error) return <div>loading</div>;
   if (error) return <div>error</div>;
 
@@ -49,7 +45,6 @@ export default function SellerDeposit() {
     const overrides = {
       from: account,
       value: utils.parseEther(sellerDeposit),
-      // chainId: networkId,
     };
     console.log('overrides', overrides);
     console.log('auctionInstance', auctionInstance);
@@ -60,7 +55,7 @@ export default function SellerDeposit() {
     <div>
       <h2>Network</h2>
       <ul>
-        <li>networkId: {networkId}</li>
+        <li>chainId: {chainId}</li>
         <li>account: {account}</li>
       </ul>
       <h2>Fund deposit</h2>

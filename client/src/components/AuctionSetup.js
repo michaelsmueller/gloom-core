@@ -2,7 +2,7 @@
 import React, { useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { ethers } from 'ethers';
-import { ConnectorContext } from '../contexts/connectorProvider';
+import { Web3Context } from '../contexts/web3Context';
 import AuctionFactory from '../contracts/AuctionFactory.json';
 import { AuctionSetupForm } from '.';
 import Button from '../styles/buttonStyles';
@@ -10,8 +10,8 @@ import { parseLocalDateTime, getLocalDateTime } from '../utils/dateTime';
 
 export default function AuctionSetup() {
   const history = useHistory();
-  const { context } = useContext(ConnectorContext);
-  const { account, active, error, library, networkId } = context;
+  const { web3Context } = useContext(Web3Context);
+  const { account, active, error, library, chainId } = web3Context;
   const [factoryContract, setFactoryContract] = useState(null);
   const [auctionAddresses, setAuctionAddresses] = useState([]);
 
@@ -24,7 +24,7 @@ export default function AuctionSetup() {
 
   const instantiateFactory = () => {
     const { networks, abi } = AuctionFactory;
-    const { address } = networks[networkId];
+    const { address } = networks[chainId];
     const factoryInstance = new Contract(address, abi, signer);
     setFactoryContract(factoryInstance);
   };
@@ -65,7 +65,7 @@ export default function AuctionSetup() {
     <div>
       <h2>Network</h2>
       <ul>
-        <li>networkId: {networkId}</li>
+        <li>chainId: {chainId}</li>
         <li>account: {account}</li>
       </ul>
       <h2>Auction Factory</h2>

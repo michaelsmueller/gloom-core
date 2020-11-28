@@ -13,7 +13,7 @@ export default function SellerDeposit({ onSubmit }) {
         <FieldsetTitle>Seller deposit</FieldsetTitle>
         <Label htmlFor='amount'>
           Amount (ETH):
-          <input type='number' id='seller-deposit' name='sellerDeposit' ref={register} />
+          <input type='number' step='0.001' min='0' id='seller-deposit' name='sellerDeposit' ref={register} />
         </Label>
       </Fieldset>
       <Button type='submit'>Fund deposit</Button>
