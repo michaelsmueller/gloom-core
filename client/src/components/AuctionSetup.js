@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import React, { useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ethers } from 'ethers';
+import { Contract } from '@ethersproject/contracts';
+import { Web3Provider } from '@ethersproject/providers';
 import { Web3Context } from '../contexts/web3Context';
 import AuctionFactory from '../contracts/AuctionFactory.json';
 import { AuctionSetupForm } from '.';
@@ -18,8 +19,7 @@ export default function AuctionSetup() {
   if (!active && !error) return <div>loading</div>;
   if (error) return <div>Error {error.message}</div>;
 
-  const { Contract, providers } = ethers;
-  const provider = new providers.Web3Provider(library.provider);
+  const provider = new Web3Provider(library.provider);
   const signer = provider.getSigner();
 
   const instantiateFactory = () => {
