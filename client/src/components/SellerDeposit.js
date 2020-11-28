@@ -13,7 +13,7 @@ export default function SellerDeposit() {
   const history = useHistory();
   const { id: auctionAddress } = useParams();
   const { web3Context } = useContext(Web3Context);
-  const { account, active, error, library, chainId } = web3Context;
+  const { account, active, error, library } = web3Context;
   const [auctionContract, setAuctionContract] = useState(null);
 
   if (!active && !error) return <div>loading</div>;
@@ -54,12 +54,7 @@ export default function SellerDeposit() {
 
   return (
     <div>
-      <h2>Network</h2>
-      <ul>
-        <li>chainId: {chainId}</li>
-        <li>account: {account}</li>
-      </ul>
-      <h2>Fund deposit</h2>
+      <h1>Fund deposit</h1>
       <SellerDepositForm onSubmit={fundDeposit} />
       <Button type='button' onClick={() => history.push(`/auctions/${auctionAddress}/bidder-invites`)}>
         Invite bidders

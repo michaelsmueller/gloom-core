@@ -63,11 +63,6 @@ export default function AuctionSetup() {
   const { address } = factoryContract || '';
   return (
     <div>
-      <h2>Network</h2>
-      <ul>
-        <li>chainId: {chainId}</li>
-        <li>account: {account}</li>
-      </ul>
       <h2>Auction Factory</h2>
       <Button type='button' onClick={instantiateFactory}>
         Instantiate factory

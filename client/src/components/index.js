@@ -1,5 +1,6 @@
 // general
 export { default as Head } from './Head';
+export { default as Network } from './Network';
 
 // CreateAuction
 export { default as AuctionSetup } from './AuctionSetup';
