@@ -2,6 +2,7 @@
 pragma solidity ^0.6.2;
 
 import './Auction.sol';
+
 // import '@openzeppelin/contracts/access/Ownable.sol';
 
 contract AuctionFactory {
@@ -18,7 +19,13 @@ contract AuctionFactory {
     return auctionAddresses;
   }
 
-  function createAuction(uint tokenAmount, address tokenContractAddress, uint startDateTime, uint endDateTime, address seller) public returns (address) {
+  function createAuction(
+    uint256 tokenAmount,
+    address tokenContractAddress,
+    uint256 startDateTime,
+    uint256 endDateTime,
+    address seller
+  ) public returns (address) {
     Auction auction = new Auction(tokenAmount, tokenContractAddress, startDateTime, endDateTime);
     auction.registerSeller(seller);
     auctionAddresses.push(auction);
