@@ -2,12 +2,12 @@
 import React, { useContext, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { Contract } from '@ethersproject/contracts';
-import { Web3Provider } from '@ethersproject/providers';
 import { parseEther } from '@ethersproject/units';
 import { Web3Context } from '../contexts/web3Context';
 import Auction from '../contracts/Auction.json';
 import { SellerDepositForm } from '.';
 import Button from '../styles/buttonStyles';
+import { getSigner } from '../utils/web3Library';
 
 export default function SellerDeposit() {
   const history = useHistory();
@@ -19,8 +19,7 @@ export default function SellerDeposit() {
   if (!active && !error) return <div>loading</div>;
   if (error) return <div>error</div>;
 
-  const provider = new Web3Provider(library.provider);
-  const signer = provider.getSigner();
+  const signer = getSigner(library);
 
   const instantiateAuction = () => {
     console.log('instantiating auction');

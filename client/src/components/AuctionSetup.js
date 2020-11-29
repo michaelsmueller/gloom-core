@@ -2,11 +2,11 @@
 import React, { useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Contract } from '@ethersproject/contracts';
-import { Web3Provider } from '@ethersproject/providers';
 import { Web3Context } from '../contexts/web3Context';
 import AuctionFactory from '../contracts/AuctionFactory.json';
 import { AuctionSetupForm } from '.';
 import Button from '../styles/buttonStyles';
+import { getSigner } from '../utils/web3Library';
 import { parseLocalDateTime, getLocalDateTime } from '../utils/dateTime';
 
 export default function AuctionSetup() {
@@ -19,8 +19,7 @@ export default function AuctionSetup() {
   if (!active && !error) return <div>loading</div>;
   if (error) return <div>Error {error.message}</div>;
 
-  const provider = new Web3Provider(library.provider);
-  const signer = provider.getSigner();
+  const signer = getSigner(library);
 
   const instantiateFactory = () => {
     const { networks, abi } = AuctionFactory;

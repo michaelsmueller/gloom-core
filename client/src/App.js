@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { Web3ReactProvider } from '@web3-react/core';
 import Web3ContextProvider from './contexts/web3Context';
 import GlobalStyle from './styles/globalStyles';
-import getLibrary from './utils/getLibrary';
+import { getLibrary } from './utils/web3Library';
 import { Head, Network, AuctionSetup, SellerDeposit, BidderInvites } from './components';
 
 export default function App() {
@@ -15,7 +15,7 @@ export default function App() {
           <GlobalStyle />
           {/* <Network /> */}
           <Switch>
-            <Route exact path='/auctions/setup' component={AuctionSetup} />
+            <Route exact path='/auctions/new' component={AuctionSetup} />
             <Route exact path='/auctions/:id/seller-deposit' component={SellerDeposit} />
             <Route exact path='/auctions/:id/bidder-invites' component={BidderInvites} />
           </Switch>
