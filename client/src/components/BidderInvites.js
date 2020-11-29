@@ -20,7 +20,7 @@ export default function BidderInvites() {
     const signer = getSigner(library);
     const auctionInstance = new Contract(auctionAddress, Auction.abi, signer);
     setAuctionContract(auctionInstance);
-  }, [auctionAddress, library, active]);
+  }, [active, library, auctionAddress]);
 
   if (!active && !error) return <div>loading</div>;
   if (error) return <div>error</div>;

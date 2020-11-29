@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Contract } from '@ethersproject/contracts';
 import { Web3Context } from '../contexts/web3Context';
@@ -16,17 +16,16 @@ export default function AuctionSetup() {
   const [factoryContract, setFactoryContract] = useState(null);
   const [auctionAddresses, setAuctionAddresses] = useState([]);
 
+  useEffect(() => {
+    if (!active) return;
+    const signer = getSigner(library);
+    const { address } = AuctionFactory.networks[chainId];
+    const factoryInstance = new Contract(address, AuctionFactory.abi, signer);
+    setFactoryContract(factoryInstance);
+  }, [active, library, chainId]);
+
   if (!active && !error) return <div>loading</div>;
   if (error) return <div>Error {error.message}</div>;
-
-  const signer = getSigner(library);
-
-  const instantiateFactory = () => {
-    const { networks, abi } = AuctionFactory;
-    const { address } = networks[chainId];
-    const factoryInstance = new Contract(address, abi, signer);
-    setFactoryContract(factoryInstance);
-  };
 
   const getAuctions = async () => {
     const response = await factoryContract.getAddresses();
@@ -59,13 +58,12 @@ export default function AuctionSetup() {
     createAuction(data);
   };
 
+  const goToSellerDeposit = () => history.push(`/auctions/${auctionAddresses[0]}/seller-deposit`);
+
   const { address } = factoryContract || '';
   return (
     <div>
-      <h2>Auction Factory</h2>
-      <Button type='button' onClick={instantiateFactory}>
-        Instantiate factory
-      </Button>
+      <h2>Auction factory</h2>
       <Button type='button' onClick={getAuctions}>
         Get auction addresses
       </Button>
@@ -81,7 +79,7 @@ export default function AuctionSetup() {
       <h2>Set up auction</h2>
       <AuctionSetupForm onSubmit={setupAuction} />
       {auctionAddresses.length ? (
-        <Button type='button' onClick={() => history.push(`/auctions/${auctionAddresses[0]}/seller-deposit`)}>
+        <Button type='button' onClick={goToSellerDeposit}>
           Make deposit
         </Button>
       ) : null}
