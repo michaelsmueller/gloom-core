@@ -8,10 +8,20 @@ contract Auction {
   address public factory;
   address public seller;
   uint256 public sellerDeposit;
+  uint256 public bidderDeposit;
   uint256 public tokenAmount;
   address public tokenContractAddress;
   uint256 public startDateTime;
   uint256 public endDateTime;
+
+  struct Bidder {
+    bool invited;
+    uint256 balance;
+    uint256 bid;
+    uint256 bidDateTime;
+  }
+
+  mapping(address => Bidder) private bidders;
 
   constructor(
     uint256 _tokenAmount,
@@ -34,5 +44,12 @@ contract Auction {
   function receiveSellerDeposit() external payable {
     require(msg.sender == seller);
     sellerDeposit = msg.value;
+  }
+
+  function registerBidder(address[] calldata _bidders) external {
+    // require(msg.sender == seller);
+    for (uint256 i = 0; i < _bidders.length; i++) {
+      bidders[_bidders[i]].invited = true;
+    }
   }
 }
