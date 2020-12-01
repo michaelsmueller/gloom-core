@@ -21,7 +21,7 @@ contract Auction {
     uint256 bidDateTime;
   }
 
-  mapping(address => Bidder) private bidders;
+  mapping(address => Bidder) public bidders;
 
   constructor(
     uint256 _tokenAmount,
@@ -37,12 +37,12 @@ contract Auction {
   }
 
   function registerSeller(address _seller) external {
-    require(msg.sender == factory);
+    require(msg.sender == factory, 'Sender not authorized');
     seller = _seller;
   }
 
   function receiveSellerDeposit() external payable {
-    require(msg.sender == seller);
+    require(msg.sender == seller, 'Sender not authorized');
     sellerDeposit = msg.value;
   }
 
