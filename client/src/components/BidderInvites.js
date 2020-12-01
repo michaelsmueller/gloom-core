@@ -7,8 +7,6 @@ import Auction from '../contracts/Auction.json';
 import { BidderInvitesForm } from '.';
 import { getSigner } from '../utils/web3Library';
 
-// import Button from '../styles/buttonStyles';
-
 export default function BidderInvites() {
   const { id: auctionAddress } = useParams();
   const { web3Context } = useContext(Web3Context);
@@ -25,9 +23,16 @@ export default function BidderInvites() {
   if (!active && !error) return <div>loading</div>;
   if (error) return <div>error</div>;
 
-  const inviteBidders = ({ bidderDeposit, bidders }) => {
+  const inviteBidders = async ({ bidderDeposit, bidders }) => {
     console.log('bidderDeposit', bidderDeposit);
     console.log('bidders', bidders);
+    const bidderAddresses = bidders.map(bidder => bidder.account);
+    console.log('bidderAddresses', bidderAddresses);
+    // const overrides = { from: account };
+    const tx = await auctionContract.setupBidders(bidderDeposit, bidderAddresses);
+    const receipt = await tx.wait();
+    console.log('tx', tx);
+    console.log('receipt', receipt);
   };
 
   return (
