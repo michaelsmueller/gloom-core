@@ -63,7 +63,7 @@ contract Auction {
   }
 
   function setupBidders(uint256 _bidderDeposit, address[] calldata _bidderAddresses) external {
-    require(msg.sender == seller);
+    require(msg.sender == seller, 'Sender not authorized');
     bidderDeposit = _bidderDeposit;
     for (uint256 i = 0; i < _bidderAddresses.length; i++) {
       inviteBidder(_bidderAddresses[i]);
