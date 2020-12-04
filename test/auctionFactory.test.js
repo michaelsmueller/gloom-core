@@ -1,22 +1,20 @@
 const AuctionFactory = artifacts.require('AuctionFactory');
 const Auction = artifacts.require('Auction');
 const truffleAssert = require('truffle-assertions');
+const {
+  tokenAmount,
+  tokenContractAddress,
+  startDateTime,
+  endDateTime,
+} = require('../data/testData');
 
 contract('AuctionFactory', accounts => {
   const admin = accounts[0];
   const seller = accounts[1];
-  const tokenAmount = 10000;
-  const tokenContractAddress = '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e'; // YFI
-  const startDateTime = 1609488000000; // 1 Jan 2020 8:00 UTC
-  const endDateTime = 1612166400000; // 1 Feb 2020 8:00 UTC
 
   beforeEach(async () => {
     factoryInstance = await AuctionFactory.new({ from: admin });
   });
-
-  // afterEach(async () => {
-  //   await factoryInstance.kill();
-  // })
 
   const createAuction = async () => {
     return await factoryInstance.createAuction(
@@ -33,7 +31,7 @@ contract('AuctionFactory', accounts => {
     assert.equal(factoryAdmin, admin, 'factory deployer is not admin');
   });
 
-  it('should create an auction and emit an event', async () => {
+  it('should create an auction', async () => {
     const tx = await createAuction();
     const { auction } = tx.logs[0].args;
     truffleAssert.eventEmitted(tx, 'AuctionCreated', event => {
@@ -41,7 +39,7 @@ contract('AuctionFactory', accounts => {
     });
   });
 
-  it('should get addresses, including the new contract', async () => {
+  it('should get auction addresses including new contract', async () => {
     const tx = await createAuction();
     const { auction } = tx.logs[0].args;
     const addresses = await factoryInstance.getAddresses();
