@@ -24,6 +24,7 @@ contract Auction {
   address[] public bidderAddresses;
 
   event ReceiveSellerDeposit(address indexed seller, uint256 indexed sellerDeposit);
+  event InvitedBidder(address indexed bidder);
 
   constructor(
     address _seller,
@@ -59,6 +60,7 @@ contract Auction {
     require(!isInvitedBidder(bidderAddress), 'Bidder already exists');
     bidders[bidderAddress].isInvited = true;
     bidderAddresses.push(bidderAddress);
+    emit InvitedBidder(bidderAddress);
   }
 
   function setupBidders(uint256 _bidderDeposit, address[] calldata _bidderAddresses) external {
