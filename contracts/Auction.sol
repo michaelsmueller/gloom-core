@@ -23,7 +23,7 @@ contract Auction {
   mapping(address => Bidder) public bidders;
   address[] public bidderAddresses;
 
-  event ReceiveSellerDeposit(address indexed seller, uint indexed sellerDeposit);
+  event ReceiveSellerDeposit(address indexed seller, uint256 indexed sellerDeposit);
 
   constructor(
     address _seller,

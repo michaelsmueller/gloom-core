@@ -19,7 +19,12 @@ contract AuctionFactory {
     return auctionAddresses;
   }
 
-  function createAuction(uint256 tokenAmount, address tokenContractAddress, uint256 startDateTime, uint256 endDateTime) external {
+  function createAuction(
+    uint256 tokenAmount,
+    address tokenContractAddress,
+    uint256 startDateTime,
+    uint256 endDateTime
+  ) external {
     address seller = msg.sender;
     Auction auction = new Auction(seller, tokenAmount, tokenContractAddress, startDateTime, endDateTime);
     auctionAddresses.push(auction);
