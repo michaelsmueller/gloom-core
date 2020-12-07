@@ -25,9 +25,9 @@ contract Auction {
   mapping(address => Bidder) public bidders;
   address[] public bidderAddresses;
 
-  event ReceiveSellerDeposit(address indexed seller, uint256 indexed sellerDeposit);
-  event InvitedBidder(address indexed bidder);
-  event BidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
+  event LogSellerDepositReceived(address indexed seller, uint256 indexed sellerDeposit);
+  event LogBidderInvited(address indexed bidder);
+  event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
 
   constructor(
     address _seller,
@@ -48,7 +48,7 @@ contract Auction {
     // consider using initialize or other modifier to preven selling from changing deposit
     require(msg.sender == seller, 'Sender not authorized');
     sellerDeposit = msg.value;
-    emit ReceiveSellerDeposit(seller, sellerDeposit);
+    emit LogSellerDepositReceived(seller, sellerDeposit);
   }
 
   function getBidders() external view returns (address[] memory) {
@@ -67,7 +67,7 @@ contract Auction {
     require(!isInvitedBidder(bidderAddress), 'Bidder already exists');
     bidders[bidderAddress].isInvited = true;
     bidderAddresses.push(bidderAddress);
-    emit InvitedBidder(bidderAddress);
+    emit LogBidderInvited(bidderAddress);
   }
 
   function setupBidders(uint256 _bidderDeposit, address[] calldata _bidderAddresses) external {
@@ -87,6 +87,6 @@ contract Auction {
     bidders[msg.sender].bidCommit = dataHash;
     bidders[msg.sender].bidCommitBlock = uint64(block.number);
     bidders[msg.sender].bidRevealed = false;
-    emit BidCommitted(msg.sender, bidders[msg.sender].bidCommit, bidders[msg.sender].bidCommitBlock);
+    emit LogBidCommitted(msg.sender, bidders[msg.sender].bidCommit, bidders[msg.sender].bidCommitBlock);
   }
 }
