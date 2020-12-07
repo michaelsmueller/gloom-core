@@ -17,14 +17,17 @@ contract Auction {
   struct Bidder {
     bool isInvited;
     uint256 balance;
-    uint256 bid;
-    uint256 bidDateTime;
+    bytes32 bidCommit;
+    uint64 bidCommitBlock;
+    bool bidRevealed;
   }
+
   mapping(address => Bidder) public bidders;
   address[] public bidderAddresses;
 
   event ReceiveSellerDeposit(address indexed seller, uint256 indexed sellerDeposit);
   event InvitedBidder(address indexed bidder);
+  event BidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
 
   constructor(
     address _seller,
@@ -52,6 +55,10 @@ contract Auction {
     return bidderAddresses;
   }
 
+  function getBidderDeposit() external view returns (uint) {
+    return bidderDeposit;
+  }
+
   function isInvitedBidder(address bidderAddress) private view returns (bool) {
     return bidders[bidderAddress].isInvited;
   }
@@ -69,5 +76,17 @@ contract Auction {
     for (uint256 i = 0; i < _bidderAddresses.length; i++) {
       inviteBidder(_bidderAddresses[i]);
     }
+  }
+
+  function getSaltedHash(bytes32 data,bytes32 salt) public view returns(bytes32){
+    return keccak256(abi.encodePacked(address(this), data, salt));
+  }
+
+  function commitBid(bytes32 dataHash) external {
+    require(isInvitedBidder(msg.sender), 'Sender not authorized');
+    bidders[msg.sender].bidCommit = dataHash;
+    bidders[msg.sender].bidCommitBlock = uint64(block.number);
+    bidders[msg.sender].bidRevealed = false;
+    emit BidCommitted(msg.sender, bidders[msg.sender].bidCommit, bidders[msg.sender].bidCommitBlock);
   }
 }
