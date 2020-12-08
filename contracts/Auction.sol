@@ -25,9 +25,10 @@ contract Auction {
   mapping(address => Bidder) public bidders;
   address[] public bidderAddresses;
 
-  event LogSellerDepositReceived(address indexed seller, uint256 indexed sellerDeposit);
+  event LogSellerDepositReceived(address indexed seller, uint256 sellerDeposit);
   event LogBidderInvited(address indexed bidder);
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
+  event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
 
   constructor(
     address _seller,
@@ -51,6 +52,9 @@ contract Auction {
     emit LogSellerDepositReceived(seller, sellerDeposit);
   }
 
+  function getDateTimes() external view returns (uint, uint) {
+    return (startDateTime, endDateTime);
+  }
   function getBidders() external view returns (address[] memory) {
     return bidderAddresses;
   }
@@ -88,5 +92,12 @@ contract Auction {
     bidders[msg.sender].bidCommitBlock = uint64(block.number);
     bidders[msg.sender].bidRevealed = false;
     emit LogBidCommitted(msg.sender, bidders[msg.sender].bidCommit, bidders[msg.sender].bidCommitBlock);
+  }
+
+  function revealBid(bytes32 bidHex, bytes32 salt) public {
+    require(bidders[msg.sender].bidRevealed == false, 'Bid already revealed');
+    bidders[msg.sender].bidRevealed = true;
+    require(getSaltedHash(bidHex, salt) == bidders[msg.sender].bidCommit, 'Revealed hash does not match');
+    emit LogBidRevealed(msg.sender, bidHex, salt);
   }
 }
