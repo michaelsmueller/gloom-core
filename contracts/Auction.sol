@@ -26,6 +26,7 @@ contract Auction {
   address[] public bidderAddresses;
 
   event LogSellerDepositReceived(address indexed seller, uint256 sellerDeposit);
+  event LogBidderDepositReceived(address indexed bidder, uint256 bidderDeposit);
   event LogBidderInvited(address indexed bidder);
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
   event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
@@ -46,20 +47,21 @@ contract Auction {
   }
 
   function receiveSellerDeposit() external payable {
-    // consider using initialize or other modifier to preven selling from changing deposit
+    // consider using initialize or other modifier to prevent seller from changing deposit
     require(msg.sender == seller, 'Sender not authorized');
     sellerDeposit = msg.value;
-    emit LogSellerDepositReceived(seller, sellerDeposit);
+    emit LogSellerDepositReceived(msg.sender, msg.value);
   }
 
-  function getDateTimes() external view returns (uint, uint) {
+  function getDateTimes() external view returns (uint256, uint256) {
     return (startDateTime, endDateTime);
   }
+
   function getBidders() external view returns (address[] memory) {
     return bidderAddresses;
   }
 
-  function getBidderDeposit() external view returns (uint) {
+  function getBidderDeposit() external view returns (uint256) {
     return bidderDeposit;
   }
 
@@ -82,19 +84,31 @@ contract Auction {
     }
   }
 
-  function getSaltedHash(bytes32 data,bytes32 salt) public view returns(bytes32){
-    return keccak256(abi.encodePacked(address(this), data, salt));
+  function receiveBidderDeposit() private {
+    // consider using initialize or other modifier to prevent bidder from changing deposit
+    require(msg.value == bidderDeposit, 'Deposit is not required amount');
+    bidders[msg.sender].balance += msg.value;
+    emit LogBidderDepositReceived(msg.sender, msg.value);
   }
 
-  function commitBid(bytes32 dataHash) external {
-    require(isInvitedBidder(msg.sender), 'Sender not authorized');
+  function commitBid(bytes32 dataHash) private {
     bidders[msg.sender].bidCommit = dataHash;
     bidders[msg.sender].bidCommitBlock = uint64(block.number);
     bidders[msg.sender].bidRevealed = false;
     emit LogBidCommitted(msg.sender, bidders[msg.sender].bidCommit, bidders[msg.sender].bidCommitBlock);
   }
 
-  function revealBid(bytes32 bidHex, bytes32 salt) public {
+  function submitBid(bytes32 dataHash) external payable {
+    require(isInvitedBidder(msg.sender), 'Sender not authorized');
+    receiveBidderDeposit();
+    commitBid(dataHash);
+  }
+
+  function getSaltedHash(bytes32 data, bytes32 salt) public view returns (bytes32) {
+    return keccak256(abi.encodePacked(address(this), data, salt));
+  }
+
+  function revealBid(bytes32 bidHex, bytes32 salt) external {
     require(bidders[msg.sender].bidRevealed == false, 'Bid already revealed');
     bidders[msg.sender].bidRevealed = true;
     require(getSaltedHash(bidHex, salt) == bidders[msg.sender].bidCommit, 'Revealed hash does not match');
