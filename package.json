@@ -5,10 +5,10 @@
     "lint": "prettier --list-different 'contracts/**/*.sol'"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^3.2.0"
+    "@openzeppelin/contracts": "^3.3.0",
+    "@openzeppelin/upgrades": "^2.8.0"
   },
   "devDependencies": {
-    "@openzeppelin/truffle-upgrades": "^1.2.3",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^6.15.0",
     "prettier": "^2.2.1",

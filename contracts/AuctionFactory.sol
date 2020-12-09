@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.2;
+pragma solidity ^0.6.0;
 
 import './Auction.sol';
-
-// import '@openzeppelin/contracts/access/Ownable.sol';
 
 contract AuctionFactory {
   address public admin;

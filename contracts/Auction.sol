@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.2;
+pragma solidity ^0.6.0;
 
-// import '@openzeppelin/contracts/proxy/Initializable.sol';
 // import '@openzeppelin/upgrades/contracts/Initializable.sol';
 
-contract Auction {
+import '@openzeppelin/contracts/access/Ownable.sol';
+
+contract Auction is Ownable {
   address public factory;
   address public seller;
   uint256 public sellerDeposit;
@@ -38,12 +39,17 @@ contract Auction {
     uint256 _startDateTime,
     uint256 _endDateTime
   ) public {
+    // Ownable.initialize(_seller);
     factory = msg.sender;
     seller = _seller;
     tokenAmount = _tokenAmount;
     tokenContractAddress = _tokenContractAddress;
     startDateTime = _startDateTime;
     endDateTime = _endDateTime;
+  }
+
+  function specialThing() public view onlyOwner returns (uint) {
+    return 420;
   }
 
   function receiveSellerDeposit() external payable {
