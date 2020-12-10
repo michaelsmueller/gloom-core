@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
-// import '@openzeppelin/upgrades/contracts/Initializable.sol';
+import '@openzeppelin/upgrades-core/contracts/Initializable.sol';
+import '@openzeppelin/contracts/access/AccessControl.sol';
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-
-contract Auction is Ownable {
+contract Auction is Initializable, AccessControl {
   address public factory;
   address public seller;
   uint256 public sellerDeposit;
@@ -14,6 +13,8 @@ contract Auction is Ownable {
   address public tokenContractAddress;
   uint256 public startDateTime;
   uint256 public endDateTime;
+
+  bytes32 public constant SELLER_ROLE = keccak256('SELLER_ROLE');
 
   struct Bidder {
     bool isInvited;
@@ -32,14 +33,15 @@ contract Auction is Ownable {
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
   event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
 
-  constructor(
+  function initialize (
     address _seller,
     uint256 _tokenAmount,
     address _tokenContractAddress,
     uint256 _startDateTime,
     uint256 _endDateTime
-  ) public {
+  ) public initializer {
     // Ownable.initialize(_seller);
+    _setupRole(SELLER_ROLE, _seller);
     factory = msg.sender;
     seller = _seller;
     tokenAmount = _tokenAmount;
@@ -48,7 +50,8 @@ contract Auction is Ownable {
     endDateTime = _endDateTime;
   }
 
-  function specialThing() public view onlyOwner returns (uint) {
+  function specialThing() public view returns (uint) {
+    require(hasRole(SELLER_ROLE, msg.sender), 'Caller is not seller');
     return 420;
   }
 

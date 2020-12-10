@@ -1,0 +1,131 @@
+{
+  "manifestVersion": "3.1",
+  "impls": {
+    "7bf1b38ac96668b53b08a966501e10c0360a429460b7545d1d5dc6dd49676962": {
+      "address": "0x559F25Bc4F6Fb3c5838A933732527C559eF3878f",
+      "txHash": "0xbf8c546cc80ac64af2e5ac8da04fae4a2d8e7212aed599c635d0e45c073f141d",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "AuctionFactory",
+            "label": "admin",
+            "type": "t_address",
+            "src": "AuctionFactory.sol:8"
+          },
+          {
+            "contract": "AuctionFactory",
+            "label": "auctionAddresses",
+            "type": "t_array(t_contract(Auction)445)dyn_storage",
+            "src": "AuctionFactory.sol:9"
+          },
+          {
+            "contract": "AuctionFactory",
+            "label": "auctionBy",
+            "type": "t_mapping(t_address,t_contract(Auction)445)",
+            "src": "AuctionFactory.sol:10"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_array(t_contract(Auction)445)dyn_storage": {
+            "label": "contract Auction[]"
+          },
+          "t_mapping(t_address,t_contract(Auction)445)": {
+            "label": "mapping(address => contract Auction)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "53ec4a89c45985378c3bb68b6b3d5e90871880dfc674b8313fdd96ba4dc8fe9f": {
+      "address": "0x82377a4652D0f79F883E467c3855586AA80b6ebe",
+      "txHash": "0x215eedc95096142cf40c3200d8e21d2728d45cf9c644a77fccafc824b6f1d6fd",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "AuctionFactory",
+            "label": "admin",
+            "type": "t_address",
+            "src": "AuctionFactory.sol:8"
+          },
+          {
+            "contract": "AuctionFactory",
+            "label": "auctionAddresses",
+            "type": "t_array(t_contract(Auction)447)dyn_storage",
+            "src": "AuctionFactory.sol:9"
+          },
+          {
+            "contract": "AuctionFactory",
+            "label": "auctionBy",
+            "type": "t_mapping(t_address,t_contract(Auction)447)",
+            "src": "AuctionFactory.sol:10"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_array(t_contract(Auction)447)dyn_storage": {
+            "label": "contract Auction[]"
+          },
+          "t_mapping(t_address,t_contract(Auction)447)": {
+            "label": "mapping(address => contract Auction)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    }
+  },
+  "admin": {
+    "address": "0x852D367F6F4D4d847bBd2975a995fE6F69De309D",
+    "txHash": "0x149ffefa04e841df554ee56b02a599923e5d3ab8047a63bb791c26c73f73db65"
+  }
+}
