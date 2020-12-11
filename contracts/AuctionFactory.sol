@@ -7,12 +7,9 @@ import './Auction.sol';
 
 contract AuctionFactory is ProxyFactory {
   address public admin;
-  // Auction[] private auctionAddresses;
   address[] private auctionAddresses;
-  // mapping(address => Auction) public auctionBy;
   mapping(address => address) public auctionBy;
 
-  // event LogAuctionCreated(Auction indexed auction, address indexed seller);
   event LogAuctionCreated(address indexed auction, address indexed seller);
 
   constructor() public {
@@ -27,21 +24,6 @@ contract AuctionFactory is ProxyFactory {
     return auctionBy[msg.sender];
   }
 
-  // function createAuction(
-  //   uint256 tokenAmount,
-  //   address tokenContractAddress,
-  //   uint256 startDateTime,
-  //   uint256 endDateTime
-  // ) external {
-  //   address seller = msg.sender;
-  //   // Auction auction = new Auction(seller, tokenAmount, tokenContractAddress, startDateTime, endDateTime);
-  //   Auction auction = new Auction();
-  //   auction.initialize(seller, tokenAmount, tokenContractAddress, startDateTime, endDateTime);
-  //   auctionAddresses.push(auction);
-  //   auctionBy[seller] = auction;
-  //   emit LogAuctionCreated(auction, seller);
-  // }
-
   function createAuction(
     address logic,
     uint256 tokenAmount,
@@ -50,7 +32,15 @@ contract AuctionFactory is ProxyFactory {
     uint256 endDateTime
   ) external {
     address seller = msg.sender;
-    bytes memory payload = abi.encodeWithSignature('initialize(address,uint256,address,uint256,uint256)', seller, tokenAmount, tokenContractAddress, startDateTime, endDateTime);
+    bytes memory payload =
+      abi.encodeWithSignature(
+        'initialize(address,uint256,address,uint256,uint256)',
+        seller,
+        tokenAmount,
+        tokenContractAddress,
+        startDateTime,
+        endDateTime
+      );
     address auction = deployMinimal(logic, payload);
     auctionAddresses.push(auction);
     auctionBy[seller] = auction;
