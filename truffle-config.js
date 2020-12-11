@@ -22,7 +22,7 @@ module.exports = {
           // runs: 1500,
         },
         // evmVersion: 'istanbul',
-        // evmVersion: 'constantinople',
+        evmVersion: 'constantinople',
       },
     },
   },
