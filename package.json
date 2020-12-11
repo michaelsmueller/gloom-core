@@ -5,8 +5,8 @@
     "lint": "prettier --list-different 'contracts/**/*.sol'"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^3.3.0",
-    "@openzeppelin/upgrades-core": "^1.4.1"
+    "@openzeppelin/contracts": "^2.5.0",
+    "@openzeppelin/upgrades": "^2.8.0"
   },
   "devDependencies": {
     "@openzeppelin/truffle-upgrades": "^1.3.0",

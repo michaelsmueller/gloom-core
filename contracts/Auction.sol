@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.0;
 
-import '@openzeppelin/upgrades-core/contracts/Initializable.sol';
-import '@openzeppelin/contracts/access/AccessControl.sol';
+import '@openzeppelin/upgrades/contracts/Initializable.sol';
 
-contract Auction is Initializable, AccessControl {
+// import '@openzeppelin/contracts/access/AccessControl.sol';
+
+contract Auction is Initializable {
   address public factory;
   address public seller;
   uint256 public sellerDeposit;
@@ -14,7 +15,7 @@ contract Auction is Initializable, AccessControl {
   uint256 public startDateTime;
   uint256 public endDateTime;
 
-  bytes32 public constant SELLER_ROLE = keccak256('SELLER_ROLE');
+  // bytes32 public constant SELLER_ROLE = keccak256('SELLER_ROLE');
 
   struct Bidder {
     bool isInvited;
@@ -33,7 +34,7 @@ contract Auction is Initializable, AccessControl {
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
   event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
 
-  function initialize (
+  function initialize(
     address _seller,
     uint256 _tokenAmount,
     address _tokenContractAddress,
@@ -41,7 +42,7 @@ contract Auction is Initializable, AccessControl {
     uint256 _endDateTime
   ) public initializer {
     // Ownable.initialize(_seller);
-    _setupRole(SELLER_ROLE, _seller);
+    // _setupRole(SELLER_ROLE, _seller);
     factory = msg.sender;
     seller = _seller;
     tokenAmount = _tokenAmount;
@@ -50,8 +51,8 @@ contract Auction is Initializable, AccessControl {
     endDateTime = _endDateTime;
   }
 
-  function specialThing() public view returns (uint) {
-    require(hasRole(SELLER_ROLE, msg.sender), 'Caller is not seller');
+  function specialThing() public pure returns (uint256) {
+    // require(hasRole(SELLER_ROLE, msg.sender), 'Caller is not seller');
     return 420;
   }
 

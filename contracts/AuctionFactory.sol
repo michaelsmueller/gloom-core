@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.3;
 
-import '@openzeppelin/upgrades-core/contracts/Initializable.sol';
-import './openzeppelin/upgradeability/ProxyFactory.sol';
+// import '@openzeppelin/upgrades/contracts/Initializable.sol';
+import '@openzeppelin/upgrades/contracts/upgradeability/ProxyFactory.sol';
 import './Auction.sol';
 
-contract AuctionFactory is Initializable {
+contract AuctionFactory is ProxyFactory {
   address public admin;
   Auction[] private auctionAddresses;
   mapping(address => Auction) public auctionBy;
 
   event LogAuctionCreated(Auction indexed auction, address indexed seller);
 
-  function initialize() public initializer {
+  constructor() public {
     admin = msg.sender;
   }
 
