@@ -3,8 +3,6 @@ pragma solidity ^0.5.3;
 
 import '@openzeppelin/upgrades/contracts/Initializable.sol';
 
-// import '@openzeppelin/contracts/access/AccessControl.sol';
-
 contract Auction is Initializable {
   address public factory;
   address public seller;
@@ -15,7 +13,8 @@ contract Auction is Initializable {
   uint256 public startDateTime;
   uint256 public endDateTime;
 
-  // bytes32 public constant SELLER_ROLE = keccak256('SELLER_ROLE');
+  enum Phase { Setup, Commit, Reveal, Deliver, Withdraw, Done }
+  Phase public phase;
 
   struct Bidder {
     bool isInvited;
@@ -34,6 +33,31 @@ contract Auction is Initializable {
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
   event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
 
+  modifier onlySeller {
+    require(msg.sender == seller, 'Sender not authorized');
+    _;
+  }
+
+  modifier isBidder {
+    require(isInvitedBidder(msg.sender), 'Sender not authorized');
+    _;
+  }
+
+  modifier inSetup {
+    require(phase == Phase.Setup, 'Action not authorized now');
+    _;
+  }
+
+  modifier inCommit {
+    require(phase == Phase.Commit, 'Action not authorized now');
+    _;
+  }
+  
+  modifier inReveal {
+    require(phase == Phase.Reveal, 'Action not authorized now');
+    _;
+  }
+
   function initialize(
     address _seller,
     uint256 _tokenAmount,
@@ -42,23 +66,17 @@ contract Auction is Initializable {
     uint256 _endDateTime
   ) public initializer {
     // Ownable.initialize(_seller);
-    // _setupRole(SELLER_ROLE, _seller);
     factory = msg.sender;
     seller = _seller;
     tokenAmount = _tokenAmount;
     tokenContractAddress = _tokenContractAddress;
     startDateTime = _startDateTime;
     endDateTime = _endDateTime;
+    phase = Phase.Setup;
   }
 
-  function specialThing() public pure returns (uint256) {
-    // require(hasRole(SELLER_ROLE, msg.sender), 'Caller is not seller');
-    return 420;
-  }
-
-  function receiveSellerDeposit() external payable {
+  function receiveSellerDeposit() external payable onlySeller inSetup {
     // consider using initialize or other modifier to prevent seller from changing deposit
-    require(msg.sender == seller, 'Sender not authorized');
     sellerDeposit = msg.value;
     emit LogSellerDepositReceived(msg.sender, msg.value);
   }
@@ -79,19 +97,22 @@ contract Auction is Initializable {
     return bidders[bidderAddress].isInvited;
   }
 
-  function inviteBidder(address bidderAddress) private {
+  function inviteBidder(address bidderAddress) private inSetup {
     require(!isInvitedBidder(bidderAddress), 'Bidder already exists');
     bidders[bidderAddress].isInvited = true;
     bidderAddresses.push(bidderAddress);
     emit LogBidderInvited(bidderAddress);
   }
 
-  function setupBidders(uint256 _bidderDeposit, address[] calldata _bidderAddresses) external {
-    require(msg.sender == seller, 'Sender not authorized');
+  function setupBidders(uint256 _bidderDeposit, address[] calldata _bidderAddresses) external onlySeller inSetup {
     bidderDeposit = _bidderDeposit;
     for (uint256 i = 0; i < _bidderAddresses.length; i++) {
       inviteBidder(_bidderAddresses[i]);
     }
+  }
+
+  function startAuction() external onlySeller inSetup {
+    phase = Phase.Commit;
   }
 
   function receiveBidderDeposit() private {
@@ -108,8 +129,7 @@ contract Auction is Initializable {
     emit LogBidCommitted(msg.sender, bidders[msg.sender].bidCommit, bidders[msg.sender].bidCommitBlock);
   }
 
-  function submitBid(bytes32 dataHash) external payable {
-    require(isInvitedBidder(msg.sender), 'Sender not authorized');
+  function submitBid(bytes32 dataHash) external payable isBidder inCommit {
     receiveBidderDeposit();
     commitBid(dataHash);
   }
@@ -118,7 +138,7 @@ contract Auction is Initializable {
     return keccak256(abi.encodePacked(address(this), data, salt));
   }
 
-  function revealBid(bytes32 bidHex, bytes32 salt) external {
+  function revealBid(bytes32 bidHex, bytes32 salt) external isBidder inReveal {
     require(bidders[msg.sender].bidRevealed == false, 'Bid already revealed');
     bidders[msg.sender].bidRevealed = true;
     require(getSaltedHash(bidHex, salt) == bidders[msg.sender].bidCommit, 'Revealed hash does not match');
