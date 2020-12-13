@@ -6,6 +6,7 @@ import '@openzeppelin/upgrades/contracts/Initializable.sol';
 contract Auction is Initializable {
   address public factory;
   address public seller;
+  address public winner;
   uint256 public sellerDeposit;
   uint256 public bidderDeposit;
   uint256 public tokenAmount;
@@ -21,7 +22,8 @@ contract Auction is Initializable {
     uint256 balance;
     bytes32 bidCommit;
     uint64 bidCommitBlock;
-    bool bidRevealed;
+    bool isBidRevealed;
+    bytes32 bidHex;
   }
 
   mapping(address => Bidder) public bidders;
@@ -38,11 +40,6 @@ contract Auction is Initializable {
     _;
   }
 
-  modifier isBidder {
-    require(isInvitedBidder(msg.sender), 'Sender not authorized');
-    _;
-  }
-
   modifier inSetup {
     require(phase == Phase.Setup, 'Action not authorized now');
     _;
@@ -55,6 +52,11 @@ contract Auction is Initializable {
   
   modifier inReveal {
     require(phase == Phase.Reveal, 'Action not authorized now');
+    _;
+  }
+
+  modifier inDeliver {
+    require(phase == Phase.Deliver, 'Action not authorized now');
     _;
   }
 
@@ -79,6 +81,11 @@ contract Auction is Initializable {
     // consider using initialize or other modifier to prevent seller from changing deposit
     sellerDeposit = msg.value;
     emit LogSellerDepositReceived(msg.sender, msg.value);
+  }
+
+  function getPhase() external view returns (Phase) {
+    require(msg.sender == seller || isInvitedBidder(msg.sender), 'Sender not authorized');
+    return phase;
   }
 
   function getDateTimes() external view returns (uint256, uint256) {
@@ -111,8 +118,32 @@ contract Auction is Initializable {
     }
   }
 
-  function startAuction() external onlySeller inSetup {
+  function setWinner() internal {
+    address _winner = bidderAddresses[0];
+    for (uint256 i = 1; i < bidderAddresses.length; i++) {
+      address current = bidderAddresses[i];
+      if (bidders[current].bidHex > bidders[_winner].bidHex) {
+        _winner = current;
+      }
+    }
+    winner = _winner;
+  }
+
+  function startCommit() external onlySeller inSetup {
     phase = Phase.Commit;
+  }
+
+  function startReveal() external onlySeller inCommit {
+    phase = Phase.Reveal;
+  }
+
+  function startDeliver() external onlySeller inReveal {
+    setWinner();
+    phase = Phase.Deliver;
+  }
+
+  function startWithdraw() external onlySeller inDeliver {
+    phase = Phase.Withdraw;
   }
 
   function receiveBidderDeposit() private {
@@ -125,11 +156,12 @@ contract Auction is Initializable {
   function commitBid(bytes32 dataHash) private {
     bidders[msg.sender].bidCommit = dataHash;
     bidders[msg.sender].bidCommitBlock = uint64(block.number);
-    bidders[msg.sender].bidRevealed = false;
+    bidders[msg.sender].isBidRevealed = false;
     emit LogBidCommitted(msg.sender, bidders[msg.sender].bidCommit, bidders[msg.sender].bidCommitBlock);
   }
 
-  function submitBid(bytes32 dataHash) external payable isBidder inCommit {
+  function submitBid(bytes32 dataHash) external payable inCommit {
+    require(isInvitedBidder(msg.sender), 'Sender not authorized');
     receiveBidderDeposit();
     commitBid(dataHash);
   }
@@ -138,10 +170,12 @@ contract Auction is Initializable {
     return keccak256(abi.encodePacked(address(this), data, salt));
   }
 
-  function revealBid(bytes32 bidHex, bytes32 salt) external isBidder inReveal {
-    require(bidders[msg.sender].bidRevealed == false, 'Bid already revealed');
-    bidders[msg.sender].bidRevealed = true;
+  function revealBid(bytes32 bidHex, bytes32 salt) external inReveal {
+    require(isInvitedBidder(msg.sender), 'Sender not authorized');
+    require(bidders[msg.sender].isBidRevealed == false, 'Bid already revealed');
     require(getSaltedHash(bidHex, salt) == bidders[msg.sender].bidCommit, 'Revealed hash does not match');
+    bidders[msg.sender].isBidRevealed = true;
+    bidders[msg.sender].bidHex = bidHex;
     emit LogBidRevealed(msg.sender, bidHex, salt);
   }
 }
