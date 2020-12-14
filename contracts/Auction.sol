@@ -2,9 +2,12 @@
 pragma solidity ^0.5.3;
 
 import '@openzeppelin/upgrades/contracts/Initializable.sol';
+import './AuctionFactory.sol';
 
 contract Auction is Initializable {
   address public factory;
+  AuctionFactory public auctionFactory;
+
   address public seller;
   address public winner;
   uint256 public sellerDeposit;
@@ -34,6 +37,7 @@ contract Auction is Initializable {
   event LogBidderInvited(address indexed bidder);
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
   event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
+  event LogSetWinner(address indexed bidder);
 
   modifier onlySeller {
     require(msg.sender == seller, 'Sender not authorized');
@@ -104,10 +108,16 @@ contract Auction is Initializable {
     return bidders[bidderAddress].isInvited;
   }
 
+  function registerBidderAtFactory(address bidderAddress) private inSetup {
+    auctionFactory = AuctionFactory(factory);
+    auctionFactory.registerBidder(bidderAddress, address(this));
+  }
+
   function inviteBidder(address bidderAddress) private inSetup {
     require(!isInvitedBidder(bidderAddress), 'Bidder already exists');
     bidders[bidderAddress].isInvited = true;
     bidderAddresses.push(bidderAddress);
+    registerBidderAtFactory(bidderAddress);
     emit LogBidderInvited(bidderAddress);
   }
 
@@ -127,6 +137,7 @@ contract Auction is Initializable {
       }
     }
     winner = _winner;
+    emit LogSetWinner(winner);
   }
 
   function startCommit() external onlySeller inSetup {

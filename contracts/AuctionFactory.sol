@@ -9,6 +9,7 @@ contract AuctionFactory is ProxyFactory {
   address public admin;
   address[] private auctionAddresses;
   mapping(address => address) public auctionBy;
+  mapping(address => address) public auctionInvited;
 
   event LogAuctionCreated(address indexed auction, address indexed seller);
 
@@ -22,6 +23,10 @@ contract AuctionFactory is ProxyFactory {
 
   function getAuctionBy() external view returns (address) {
     return auctionBy[msg.sender];
+  }
+
+  function getAuctionInvited() external view returns (address) {
+    return auctionInvited[msg.sender];
   }
 
   function createAuction(
@@ -45,5 +50,9 @@ contract AuctionFactory is ProxyFactory {
     auctionAddresses.push(auction);
     auctionBy[seller] = auction;
     emit LogAuctionCreated(auction, seller);
+  }
+
+  function registerBidder(address bidder, address auction) external {
+    auctionInvited[bidder] = auction;
   }
 }
