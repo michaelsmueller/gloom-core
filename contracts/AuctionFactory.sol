@@ -8,6 +8,7 @@ import './Auction.sol';
 contract AuctionFactory is ProxyFactory {
   address public admin;
   address[] private auctionAddresses;
+  mapping(address => bool) public auctionExists;
   mapping(address => address) public auctionBy;
   mapping(address => address) public auctionInvited;
 
@@ -48,11 +49,13 @@ contract AuctionFactory is ProxyFactory {
       );
     address auction = deployMinimal(logic, payload);
     auctionAddresses.push(auction);
+    auctionExists[auction] = true;
     auctionBy[seller] = auction;
     emit LogAuctionCreated(auction, seller);
   }
 
   function registerBidder(address bidder, address auction) external {
+    require(auctionExists[auction], 'Sender not authorized');
     auctionInvited[bidder] = auction;
   }
 }
