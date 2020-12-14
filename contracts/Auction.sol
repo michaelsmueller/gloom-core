@@ -3,11 +3,10 @@ pragma solidity ^0.5.3;
 
 import '@openzeppelin/upgrades/contracts/Initializable.sol';
 import './AuctionFactory.sol';
+import './Escrow.sol';
 
 contract Auction is Initializable {
   address public factory;
-  AuctionFactory public auctionFactory;
-
   address public seller;
   address public winner;
   uint256 public sellerDeposit;
@@ -109,7 +108,7 @@ contract Auction is Initializable {
   }
 
   function registerBidderAtFactory(address bidderAddress) private inSetup {
-    auctionFactory = AuctionFactory(factory);
+    AuctionFactory auctionFactory = AuctionFactory(factory);
     auctionFactory.registerBidder(bidderAddress, address(this));
   }
 
@@ -149,8 +148,9 @@ contract Auction is Initializable {
   }
 
   function startDeliver() external onlySeller inReveal {
-    setWinner();
     phase = Phase.Deliver;
+    setWinner();
+    deployEscrow();
   }
 
   function startWithdraw() external onlySeller inDeliver {
@@ -188,5 +188,10 @@ contract Auction is Initializable {
     bidders[msg.sender].isBidRevealed = true;
     bidders[msg.sender].bidHex = bidHex;
     emit LogBidRevealed(msg.sender, bidHex, salt);
+  }
+
+  function deployEscrow() internal {
+    Escrow escrow = new Escrow();
+    escrow.initialize(seller, winner, tokenAmount, tokenContractAddress);
   }
 }

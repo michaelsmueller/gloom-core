@@ -13,6 +13,7 @@ contract AuctionFactory is ProxyFactory {
   mapping(address => address) public auctionInvited;
 
   event LogAuctionCreated(address indexed auction, address indexed seller);
+  event LogBidderRegistered(address indexed auction, address indexed bidder);
 
   constructor() public {
     admin = msg.sender;
@@ -57,5 +58,6 @@ contract AuctionFactory is ProxyFactory {
   function registerBidder(address bidder, address auction) external {
     require(auctionExists[auction], 'Sender not authorized');
     auctionInvited[bidder] = auction;
+    emit LogBidderRegistered(auction, bidder);
   }
 }
