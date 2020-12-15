@@ -16,6 +16,9 @@ contract Auction is Initializable {
   uint256 public startDateTime;
   uint256 public endDateTime;
 
+  Escrow public escrow;
+  address public escrowAddress;
+
   enum Phase { Setup, Commit, Reveal, Deliver, Withdraw, Done }
   Phase public phase;
 
@@ -191,7 +194,9 @@ contract Auction is Initializable {
   }
 
   function deployEscrow() internal {
-    Escrow escrow = new Escrow();
-    escrow.initialize(seller, winner, tokenAmount, tokenContractAddress);
+    escrow = new Escrow();
+    escrowAddress = address(escrow);
+    bytes32 winningBid = bidders[winner].bidHex;
+    escrow.initialize(seller, winner, tokenAmount, tokenContractAddress, winningBid);
   }
 }
