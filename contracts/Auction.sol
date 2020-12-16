@@ -17,7 +17,6 @@ contract Auction is Initializable {
   uint256 public endDateTime;
 
   Escrow public escrow;
-  address public escrowAddress;
 
   enum Phase { Setup, Commit, Reveal, Deliver, Withdraw, Done }
   Phase public phase;
@@ -83,6 +82,10 @@ contract Auction is Initializable {
     phase = Phase.Setup;
   }
 
+  function getBalance() external view onlySeller returns(uint) {
+    return address(this).balance;
+  }
+
   function receiveSellerDeposit() external payable onlySeller inSetup {
     // consider using initialize or other modifier to prevent seller from changing deposit
     sellerDeposit = msg.value;
@@ -98,6 +101,9 @@ contract Auction is Initializable {
     return (startDateTime, endDateTime);
   }
 
+  function getAsset() external view returns (uint256, address) {
+    return (tokenAmount, tokenContractAddress);
+  }
   function getBidders() external view returns (address[] memory) {
     return bidderAddresses;
   }
@@ -195,7 +201,6 @@ contract Auction is Initializable {
 
   function deployEscrow() internal {
     escrow = new Escrow();
-    escrowAddress = address(escrow);
     bytes32 winningBid = bidders[winner].bidHex;
     escrow.initialize(seller, winner, tokenAmount, tokenContractAddress, winningBid);
   }
