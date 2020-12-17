@@ -2,13 +2,7 @@ const HDWalletProvider = require('@truffle/hdwallet-provider');
 const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config();
-// const { MNEMONIC, PROJECT_ID } = process.env;
-
-const { PROJECT_ID } = process.env;
-const mnemonic = 'gesture loud ladder inspire joke recipe proud trip output rain used mouse';
-// console.log('mnemonic', MNEMONIC);
-console.log('project_id', PROJECT_ID);
-
+const { MNEMONIC, PROJECT_ID } = process.env;
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
@@ -24,7 +18,7 @@ module.exports = {
     },
     kovan: {
       provider: function () {
-        return new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/658ac54d0a4e41ddb61fbcaf9ab2c666`);
+        return new HDWalletProvider(MNEMONIC, `https://kovan.infura.io/v3/${PROJECT_ID}`);
       },
       // gas: 80000000,
       network_id: 42,
