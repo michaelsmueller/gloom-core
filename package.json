@@ -5,6 +5,7 @@
     "lint": "prettier --list-different 'contracts/**/*.sol'"
   },
   "dependencies": {
+    "@chainlink/contracts": "^0.0.11",
     "@openzeppelin/contracts": "^2.5.0",
     "@openzeppelin/upgrades": "^2.8.0",
     "@truffle/hdwallet-provider": "^1.2.0",

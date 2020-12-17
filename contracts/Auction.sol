@@ -2,12 +2,13 @@
 pragma solidity ^0.5.3;
 
 import '@openzeppelin/upgrades/contracts/Initializable.sol';
+import '@chainlink/contracts/src/v0.5/ChainlinkClient.sol';
 import './AuctionFactory.sol';
 import './Escrow.sol';
 
-contract Auction is Initializable {
+contract Auction is Initializable, ChainlinkClient {
   address public factory;
-  address public seller;
+  address payable public seller;
   address public winner;
   uint256 public sellerDeposit;
   uint256 public bidderDeposit;
@@ -15,6 +16,10 @@ contract Auction is Initializable {
   address public tokenContractAddress;
   uint256 public startDateTime;
   uint256 public endDateTime;
+
+  address private oracle;
+  bytes32 private jobId;
+  uint256 private oracleFee;
 
   Escrow public escrow;
 
@@ -66,7 +71,7 @@ contract Auction is Initializable {
   }
 
   function initialize(
-    address _seller,
+    address payable _seller,
     uint256 _tokenAmount,
     address _tokenContractAddress,
     uint256 _startDateTime,
@@ -80,6 +85,11 @@ contract Auction is Initializable {
     startDateTime = _startDateTime;
     endDateTime = _endDateTime;
     phase = Phase.Setup;
+
+    // setPublicChainlinkToken();
+    // oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
+    // jobId = '29fa9aa13bf1468788b7cc4a500a45b8';
+    // oracleFee = 0.1 * 10 ** 18; // 0.1 LINK
   }
 
   function getBalance() external view onlySeller returns(uint) {
@@ -150,9 +160,10 @@ contract Auction is Initializable {
 
   function startCommit() external onlySeller inSetup {
     phase = Phase.Commit;
+    delayStart(oracle, jobId);
   }
 
-  function startReveal() external onlySeller inCommit {
+  function startReveal() public onlySeller inCommit {
     phase = Phase.Reveal;
   }
 
@@ -164,6 +175,16 @@ contract Auction is Initializable {
 
   function startWithdraw() external onlySeller inDeliver {
     phase = Phase.Withdraw;
+  }
+
+  function delayStart(address _oracle, bytes32 _jobId) private {
+    Chainlink.Request memory req = buildChainlinkRequest(_jobId, address(this), this.fulfill.selector);
+    req.addUint('until', now + 1 minutes);
+    sendChainlinkRequestTo(_oracle, req, oracleFee);
+  }
+
+  function fulfill(bytes32 _requestId) public recordChainlinkFulfillment(_requestId){
+    startReveal();
   }
 
   function receiveBidderDeposit() private {
@@ -204,4 +225,8 @@ contract Auction is Initializable {
     bytes32 winningBid = bidders[winner].bidHex;
     escrow.initialize(seller, winner, tokenAmount, tokenContractAddress, winningBid);
   }
+
+  // function withdraw() external payable onlySeller {
+  //   seller.transfer(address(this).balance);
+  // }
 }
