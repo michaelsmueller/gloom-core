@@ -3,7 +3,7 @@ const Auction = artifacts.require('Auction');
 const truffleAssert = require('truffle-assertions');
 const { tokenAmount, tokenContractAddress, startDateTime, endDateTime } = require('../data/testData');
 
-contract('AuctionFactory', accounts => {
+contract.only('AuctionFactory', accounts => {
   let factoryInstance, logicInstance, logicAddress;
   const admin = accounts[0];
   const seller = accounts[1];
@@ -41,7 +41,7 @@ contract('AuctionFactory', accounts => {
     const tx = await createAuction();
     let createdAuction;
     truffleAssert.eventEmitted(tx, 'LogAuctionCreated', event => {
-      return (createdAuction = event.auction);
+      return createdAuction === event.auction;
     });
     const addresses = await factoryInstance.getAddresses();
     assert.isTrue(addresses.includes(createdAuction));

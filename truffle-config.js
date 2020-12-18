@@ -1,18 +1,18 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const path = require('path');
-const dotenv = require('dotenv');
-dotenv.config();
+// const dotenv = require('dotenv');
+// dotenv.config();
 // const { MNEMONIC, PROJECT_ID } = process.env;
 
-const mnemonic = 'gesture loud ladder inspire joke recipe proud trip output rain used mouse';
+const mnemonic = 'CENSORED';
+
+// console.log('__dirname', __dirname);
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
   contracts_build_directory: path.join(__dirname, '../gloom-interface/src/contracts'),
-  // contracts_directory: path.join(__dirname, '../gloom-interface/src/contracts'),
   // contracts_build_directory: path.join(__dirname, 'src/contracts'),
-  // contracts_directory: path.join(__dirname, 'client/src/contracts'),
   networks: {
     development: {
       host: '127.0.0.1',

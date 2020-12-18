@@ -2,11 +2,12 @@
 pragma solidity ^0.5.3;
 
 import '@openzeppelin/upgrades/contracts/Initializable.sol';
-import '@chainlink/contracts/src/v0.5/ChainlinkClient.sol';
+import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+// import '@chainlink/contracts/src/v0.5/ChainlinkClient.sol';
 import './AuctionFactory.sol';
 import './Escrow.sol';
 
-contract Auction is Initializable, ChainlinkClient {
+contract Auction is Initializable {
   address public factory;
   address payable public seller;
   address public winner;
@@ -16,7 +17,6 @@ contract Auction is Initializable, ChainlinkClient {
   address public tokenContractAddress;
   uint256 public startDateTime;
   uint256 public endDateTime;
-
   address private oracle;
   bytes32 private jobId;
   uint256 private oracleFee;
@@ -160,7 +160,7 @@ contract Auction is Initializable, ChainlinkClient {
 
   function startCommit() external onlySeller inSetup {
     phase = Phase.Commit;
-    delayStart(oracle, jobId);
+    // delayStart(oracle, jobId);
   }
 
   function startReveal() public onlySeller inCommit {
@@ -177,15 +177,15 @@ contract Auction is Initializable, ChainlinkClient {
     phase = Phase.Withdraw;
   }
 
-  function delayStart(address _oracle, bytes32 _jobId) private {
-    Chainlink.Request memory req = buildChainlinkRequest(_jobId, address(this), this.fulfill.selector);
-    req.addUint('until', now + 1 minutes);
-    sendChainlinkRequestTo(_oracle, req, oracleFee);
-  }
+  // function delayStart(address _oracle, bytes32 _jobId) private {
+  //   Chainlink.Request memory req = buildChainlinkRequest(_jobId, address(this), this.fulfill.selector);
+  //   req.addUint('until', now + 1 minutes);
+  //   sendChainlinkRequestTo(_oracle, req, oracleFee);
+  // }
 
-  function fulfill(bytes32 _requestId) public recordChainlinkFulfillment(_requestId){
-    startReveal();
-  }
+  // function fulfill(bytes32 _requestId) public recordChainlinkFulfillment(_requestId){
+  //   startReveal();
+  // }
 
   function receiveBidderDeposit() private {
     // consider using initialize or other modifier to prevent bidder from changing deposit
@@ -226,7 +226,7 @@ contract Auction is Initializable, ChainlinkClient {
     escrow.initialize(seller, winner, tokenAmount, tokenContractAddress, winningBid);
   }
 
-  // function withdraw() external payable onlySeller {
-  //   seller.transfer(address(this).balance);
-  // }
+  function withdraw() external payable onlySeller {
+    seller.transfer(address(this).balance);
+  }
 }
