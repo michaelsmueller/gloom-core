@@ -128,7 +128,7 @@ contract Auction is Initializable {
 
   function registerBidderAtFactory(address bidderAddress) private inSetup {
     AuctionFactory auctionFactory = AuctionFactory(factory);
-    auctionFactory.registerBidder(bidderAddress, address(this));
+    auctionFactory.registerBidder(bidderAddress);
   }
 
   function inviteBidder(address bidderAddress) private inSetup {
