@@ -2,7 +2,6 @@ const Escrow = artifacts.require('Escrow');
 const MikeToken = artifacts.require('MikeToken');
 const truffleAssert = require('truffle-assertions');
 const { BN } = web3.utils;
-// const testData = require('../data/testData');
 
 contract('Escrow', accounts => {
   let escrowInstance;
@@ -28,6 +27,17 @@ contract('Escrow', accounts => {
     await mikeToken.transfer(seller, tokenAmount, { from: admin });
     await escrowInstance.initialize(seller, buyer, tokenAmount, mikeToken.address, WINNING_BID_HEX_PADDED);
     await mikeToken.approve(escrowInstance.address, tokenAmount, { from: seller });
+  });
+
+  it('should allow seller and buyer to check winning bid', async () => {
+    const winningBid1 = await escrowInstance.getWinningBid({ from: buyer });
+    assert(winningBid1.eq(WINNING_BID_BN), 'incorrect winning bid amount');
+    const winningBid2 = await escrowInstance.getWinningBid({ from: seller });
+    assert(winningBid2.eq(WINNING_BID_BN), 'incorrect winning bid amount');
+  });
+
+  it('should not allow someone other than seller or buyer to check winning bid', async () => {
+    await truffleAssert.reverts(escrowInstance.getWinningBid({ from: attacker }), 'Sender not authorized');
   });
 
   it('should accept correct payment from the buyer', async () => {

@@ -6,7 +6,6 @@ import '@openzeppelin/upgrades/contracts/Initializable.sol';
 import './MikeToken.sol';
 
 contract Escrow is Initializable {
-
   address private auction;
   address private seller;
   address private buyer;
@@ -30,12 +29,12 @@ contract Escrow is Initializable {
   }
 
   modifier onlySellerOrBuyer {
-    require (msg.sender == seller || msg.sender == buyer, 'Sender not authorized');
+    require(msg.sender == seller || msg.sender == buyer, 'Sender not authorized');
     _;
   }
 
-  event LogBuyerPaid(address indexed buyer, uint256 amount);
   event LogSellerDelivered(address indexed seller, uint256 tokenAmount);
+  event LogBuyerPaid(address indexed buyer, uint256 amount);
   event LogSellerWithdrew(address indexed seller, uint256 amount);
   event LogBuyerWithdrew(address indexed buyer, uint256 tokenAmount);
 
@@ -52,6 +51,10 @@ contract Escrow is Initializable {
     tokenAmount = _tokenAmount;
     tokenContractAddress = _tokenContractAddress;
     winningBid = uint256(_winningBid);
+  }
+
+  function getWinningBid() external view onlySellerOrBuyer returns (uint256) {
+    return winningBid;
   }
 
   function sellerDelivery() external onlySeller {

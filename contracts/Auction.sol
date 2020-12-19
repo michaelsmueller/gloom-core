@@ -59,7 +59,7 @@ contract Auction is Initializable {
     require(phase == Phase.Commit, 'Action not authorized now');
     _;
   }
-  
+
   modifier inReveal {
     require(phase == Phase.Reveal, 'Action not authorized now');
     _;
@@ -92,7 +92,7 @@ contract Auction is Initializable {
     // oracleFee = 0.1 * 10 ** 18; // 0.1 LINK
   }
 
-  function getBalance() external view onlySeller returns(uint) {
+  function getBalance() external view onlySeller returns (uint256) {
     return address(this).balance;
   }
 
@@ -107,6 +107,16 @@ contract Auction is Initializable {
     return phase;
   }
 
+  function getWinner() external view returns (address) {
+    require(msg.sender == seller || isInvitedBidder(msg.sender), 'Sender not authorized');
+    return winner;
+  }
+
+  function getEscrow() external view returns (Escrow) {
+    require(msg.sender == seller || msg.sender == winner, 'Sender not authorized');
+    return escrow;
+  }
+
   function getDateTimes() external view returns (uint256, uint256) {
     return (startDateTime, endDateTime);
   }
@@ -114,6 +124,7 @@ contract Auction is Initializable {
   function getAsset() external view returns (uint256, address) {
     return (tokenAmount, tokenContractAddress);
   }
+
   function getBidders() external view returns (address[] memory) {
     return bidderAddresses;
   }
