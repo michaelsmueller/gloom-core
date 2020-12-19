@@ -2,6 +2,7 @@ const Escrow = artifacts.require('Escrow');
 const MikeToken = artifacts.require('MikeToken');
 const truffleAssert = require('truffle-assertions');
 const { BN } = web3.utils;
+// const testData = require('../data/testData');
 
 contract('Escrow', accounts => {
   let escrowInstance;
@@ -14,6 +15,7 @@ contract('Escrow', accounts => {
   const WINNING_BID = web3.utils.toWei('1', 'ether');
   const WINNING_BID_HEX = web3.utils.numberToHex(WINNING_BID);
   const WINNING_BID_HEX_PADDED = web3.utils.padLeft(WINNING_BID_HEX, 64);
+  const WINNING_BID_BN = new BN(WINNING_BID);
 
   const TOKENS = new BN(100);
   const DECIMALS = new BN(18);
@@ -35,7 +37,6 @@ contract('Escrow', accounts => {
       amount = event.amount;
       return event.buyer === buyer;
     });
-    const WINNING_BID_BN = new BN(WINNING_BID);
     assert(amount.eq(WINNING_BID_BN), 'incorrect payment amount');
   });
 
@@ -46,16 +47,46 @@ contract('Escrow', accounts => {
     );
   });
 
+  it('should not show both ok after only buyer payment', async () => {
+    const bothOk = await escrowInstance.bothOk({ from: buyer });
+    assert(!bothOk, 'Both are ok');
+  });
+
   it('should accept correct token transfer from the seller', async () => {
     const tx = await escrowInstance.sellerDelivery({ from: seller });
     truffleAssert.eventEmitted(tx, 'LogSellerDelivered', event => {
-      assert.deepEqual(event.amount, tokenAmount, 'incorrect transfer amount');
+      assert.deepEqual(event.tokenAmount, tokenAmount, 'incorrect transfer amount');
       return event.seller === seller;
     });
   });
 
-  it('should get correct token balance of contract', async () => {
-    const contractTokenBalance = await escrowInstance.getContractTokenBalance();
-    assert.deepEqual(contractTokenBalance, tokenAmount, 'incorrect token balance');
+  it('seller and buyer can confirm find bothOk after payment and token delivery', async () => {
+    const bothOk1 = await escrowInstance.bothOk({ from: seller });
+    const bothOk2 = await escrowInstance.bothOk({ from: buyer });
+    assert(bothOk1 && bothOk2, 'Both are not ok');
+  });
+
+  it('should not allow someone other than seller or buyer to check bothOk', async () => {
+    await truffleAssert.reverts(escrowInstance.bothOk({ from: attacker }), 'Sender not authorized');
+  });
+
+  it('should allow seller to withdraw winning bid payment', async () => {
+    const tx = await escrowInstance.sellerWithdraw({ from: seller });
+    let amount;
+    truffleAssert.eventEmitted(tx, 'LogSellerWithdrew', event => {
+      amount = event.amount;
+      return event.seller == seller;
+    });
+    assert(amount.eq(WINNING_BID_BN), 'incorrect payment amount');
+  });
+
+  it('should allow buyer to withdraw tokens', async () => {
+    const tx = await escrowInstance.buyerWithdraw({ from: buyer });
+    let amount;
+    truffleAssert.eventEmitted(tx, 'LogBuyerWithdrew', event => {
+      amount = event.tokenAmount;
+      return event.buyer == buyer;
+    });
+    assert(amount.eq(tokenAmount), 'incorrect payment amount');
   });
 });

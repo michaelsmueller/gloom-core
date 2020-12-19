@@ -7,28 +7,37 @@ import './MikeToken.sol';
 
 contract Escrow is Initializable {
 
-  address public auction;
-  address public seller;
-  address public buyer;
-  uint256 public tokenAmount;
-  address public tokenContractAddress;
-  uint256 public winningBid;
-  uint256 public balance;
-  bool public sellerOk;
-  bool public buyerOk;
+  address private auction;
+  address private seller;
+  address private buyer;
+  uint256 private tokenAmount;
+  address private tokenContractAddress;
+  uint256 private winningBid;
 
-  modifier onlyBuyer {
-    require(msg.sender == buyer, 'Sender not authorized');
-    _;
-  }
+  uint256 private tokenBalance;
+  uint256 private balance;
+  bool private sellerOk;
+  bool private buyerOk;
 
   modifier onlySeller {
     require(msg.sender == seller, 'Sender not authorized');
     _;
   }
 
+  modifier onlyBuyer {
+    require(msg.sender == buyer, 'Sender not authorized');
+    _;
+  }
+
+  modifier onlySellerOrBuyer {
+    require (msg.sender == seller || msg.sender == buyer, 'Sender not authorized');
+    _;
+  }
+
   event LogBuyerPaid(address indexed buyer, uint256 amount);
-  event LogSellerDelivered(address indexed seller, uint256 amount);
+  event LogSellerDelivered(address indexed seller, uint256 tokenAmount);
+  event LogSellerWithdrew(address indexed seller, uint256 amount);
+  event LogBuyerWithdrew(address indexed buyer, uint256 tokenAmount);
 
   function initialize(
     address _seller,
@@ -45,14 +54,9 @@ contract Escrow is Initializable {
     winningBid = uint256(_winningBid);
   }
 
-  function getContractTokenBalance() external view returns (uint) {
-    return IERC20(tokenContractAddress).balanceOf(address(this));
-  }
-
   function sellerDelivery() external onlySeller {
     require(IERC20(tokenContractAddress).transferFrom(msg.sender, address(this), tokenAmount), 'Transfer failed');
-    // uint256 sellerBalance = IERC20(tokenContractAddress).balanceOf(msg.sender);
-    // uint contractBalance = IERC20(tokenContractAddress).balanceOf(address(this));
+    tokenBalance += tokenAmount;
     sellerOk = true;
     emit LogSellerDelivered(msg.sender, tokenAmount);
   }
@@ -62,5 +66,26 @@ contract Escrow is Initializable {
     balance += msg.value;
     buyerOk = true;
     emit LogBuyerPaid(msg.sender, msg.value);
+  }
+
+  function bothOk() public view onlySellerOrBuyer returns (bool) {
+    return sellerOk && buyerOk;
+  }
+
+  function sellerWithdraw() external payable onlySeller {
+    require(bothOk(), 'Escrow is not complete');
+    require(address(this).balance >= winningBid, 'Insufficient balance');
+    balance -= winningBid;
+    (bool success, ) = msg.sender.call.value(winningBid)('');
+    require(success, 'Transfer failed');
+    emit LogSellerWithdrew(msg.sender, winningBid);
+  }
+
+  function buyerWithdraw() external onlyBuyer {
+    require(bothOk(), 'Escrow is not complete');
+    require(IERC20(tokenContractAddress).balanceOf(address(this)) >= tokenAmount, 'Insufficient balance');
+    tokenBalance -= tokenAmount;
+    require(IERC20(tokenContractAddress).transfer(msg.sender, tokenAmount), 'Transfer failed');
+    emit LogBuyerWithdrew(msg.sender, tokenAmount);
   }
 }
