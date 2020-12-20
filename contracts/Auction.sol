@@ -40,10 +40,12 @@ contract Auction is Initializable {
 
   event LogSellerDepositReceived(address indexed seller, uint256 sellerDeposit);
   event LogBidderDepositReceived(address indexed bidder, uint256 bidderDeposit);
+  event LogSellerDepositWithdrawn(address indexed seller, uint256 amount);
+
   event LogBidderInvited(address indexed bidder);
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
   event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
-  event LogSetWinner(address indexed bidder);
+  event LogSetWinner(address indexed bidder, uint256 bid);
 
   modifier onlySeller {
     require(msg.sender == seller, 'Sender not authorized');
@@ -67,6 +69,11 @@ contract Auction is Initializable {
 
   modifier inDeliver {
     require(phase == Phase.Deliver, 'Action not authorized now');
+    _;
+  }
+
+  modifier inWithdraw {
+    require(phase == Phase.Withdraw, 'Action not authorized now');
     _;
   }
 
@@ -102,14 +109,24 @@ contract Auction is Initializable {
     emit LogSellerDepositReceived(msg.sender, msg.value);
   }
 
+  function withdrawSellerDeposit() external payable onlySeller inWithdraw {
+    // require(bothOk(), 'Escrow is not complete');
+    require(address(this).balance >= sellerDeposit, 'Insufficient balance');
+    // balance -= winningBid;
+    (bool success, ) = msg.sender.call.value(sellerDeposit)('');
+    require(success, 'Transfer failed');
+    emit LogSellerDepositWithdrawn(msg.sender, sellerDeposit);
+  }
+
   function getPhase() external view returns (Phase) {
     require(msg.sender == seller || isInvitedBidder(msg.sender), 'Sender not authorized');
     return phase;
   }
 
-  function getWinner() external view returns (address) {
+  function getWinner() external view returns (address, uint256) {
     require(msg.sender == seller || isInvitedBidder(msg.sender), 'Sender not authorized');
-    return winner;
+    uint256 winningBid = uint256(bidders[winner].bidHex);
+    return (winner, winningBid);
   }
 
   function getEscrow() external view returns (Escrow) {
@@ -130,7 +147,12 @@ contract Auction is Initializable {
   }
 
   function getBidderDeposit() external view returns (uint256) {
+    require(isInvitedBidder(msg.sender), 'Sender not authorized');
     return bidderDeposit;
+  }
+
+  function getSellerDeposit() external view onlySeller returns (uint256) {
+    return sellerDeposit;
   }
 
   function isInvitedBidder(address bidderAddress) private view returns (bool) {
@@ -166,7 +188,8 @@ contract Auction is Initializable {
       }
     }
     winner = _winner;
-    emit LogSetWinner(winner);
+    uint256 winningBid = uint256(bidders[winner].bidHex);
+    emit LogSetWinner(winner, winningBid);
   }
 
   function startCommit() external onlySeller inSetup {

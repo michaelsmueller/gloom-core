@@ -53,6 +53,14 @@ contract Escrow is Initializable {
     winningBid = uint256(_winningBid);
   }
 
+  function getTokenAmount() external view onlySellerOrBuyer returns (uint256) {
+    return tokenAmount;
+  }
+
+  function getTokenContractAddress() external view onlySellerOrBuyer returns (address) {
+    return tokenContractAddress;
+  }
+
   function getWinningBid() external view onlySellerOrBuyer returns (uint256) {
     return winningBid;
   }
