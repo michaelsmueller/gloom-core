@@ -14,15 +14,10 @@ contract Auction is Initializable {
   uint256 public bidderDeposit;
   uint256 public tokenAmount;
   address public tokenContractAddress;
-  uint256 public startDateTime;
-  uint256 public endDateTime;
-  address private oracle;
-  bytes32 private jobId;
-  uint256 private oracleFee;
 
   Escrow public escrow;
 
-  enum Phase { Setup, Commit, Reveal, Deliver, Withdraw, Done }
+  enum Phase { Setup, Commit, Reveal, Deliver, Withdraw }
   Phase public phase;
 
   struct Bidder {
@@ -97,23 +92,13 @@ contract Auction is Initializable {
   function initialize(
     address payable _seller,
     uint256 _tokenAmount,
-    address _tokenContractAddress,
-    uint256 _startDateTime,
-    uint256 _endDateTime
+    address _tokenContractAddress
   ) public initializer {
     factory = msg.sender;
     seller = _seller;
     tokenAmount = _tokenAmount;
     tokenContractAddress = _tokenContractAddress;
-    startDateTime = _startDateTime;
-    endDateTime = _endDateTime;
     phase = Phase.Setup;
-  }
-
-  // ALL PHASES OPEN
-
-  function getDateTimes() external view returns (uint256, uint256) {
-    return (startDateTime, endDateTime);
   }
 
 
@@ -289,18 +274,14 @@ contract Auction is Initializable {
   // WITHDRAW PHASE ONLY SELLER OR BIDDER
 
   function withdrawSellerDeposit() external payable onlySeller inWithdraw {
-    // require(bothOk(), 'Escrow is not complete');
     require(address(this).balance >= sellerDeposit, 'Insufficient balance');
-    // balance -= winningBid;
     (bool success, ) = msg.sender.call.value(sellerDeposit)('');
     require(success, 'Transfer failed');
     emit LogSellerDepositWithdrawn(msg.sender, sellerDeposit);
   }
 
   function withdrawBidderDeposit() external payable onlyBidder inWithdraw {
-    // require(bothOk(), 'Escrow is not complete');
     require(address(this).balance >= bidderDeposit, 'Insufficient balance');
-    // balance -= winningBid;
     (bool success, ) = msg.sender.call.value(sellerDeposit)('');
     require(success, 'Transfer failed');
     emit LogBidderDepositWithdrawn(msg.sender, bidderDeposit);

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.5.3;
 
-// import '@openzeppelin/upgrades/contracts/Initializable.sol';
 import '@openzeppelin/upgrades/contracts/upgradeability/ProxyFactory.sol';
 import './Auction.sol';
 
@@ -31,22 +30,14 @@ contract AuctionFactory is ProxyFactory {
     return auctionInvited[msg.sender];
   }
 
-  function createAuction(
-    address logic,
-    uint256 tokenAmount,
-    address tokenContractAddress,
-    uint256 startDateTime,
-    uint256 endDateTime
-  ) external {
+  function createAuction(address logic, uint256 tokenAmount, address tokenContractAddress) external {
     address seller = msg.sender;
     bytes memory payload =
       abi.encodeWithSignature(
-        'initialize(address,uint256,address,uint256,uint256)',
+        'initialize(address,uint256,address)',
         seller,
         tokenAmount,
-        tokenContractAddress,
-        startDateTime,
-        endDateTime
+        tokenContractAddress
       );
     address auction = deployMinimal(logic, payload);
     auctionAddresses.push(auction);

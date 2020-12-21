@@ -16,8 +16,6 @@ contract('Auction', accounts => {
   const TEN = new BN(10);
   const tokenAmount = TOKENS.mul(TEN.pow(DECIMALS));
   const tokenContractAddress = '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e'; // YFI
-  const startDateTime = 1609488000000; // 1 Jan 2020 8:00 UTC
-  const endDateTime = 1612166400000; // 1 Feb 2020 8:00 UTC
 
   beforeEach(async () => {
     factoryInstance = await AuctionFactory.new({ from: admin });
@@ -29,14 +27,7 @@ contract('Auction', accounts => {
   });
 
   const createAuction = async () => {
-    return await factoryInstance.createAuction(
-      logicAddress,
-      tokenAmount,
-      tokenContractAddress,
-      startDateTime,
-      endDateTime,
-      { from: seller },
-    );
+    return await factoryInstance.createAuction(logicAddress, tokenAmount, tokenContractAddress, { from: seller });
   };
 
   it('should accept a deposit from seller', async () => {
