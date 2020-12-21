@@ -44,15 +44,14 @@ contract AuctionFactory is ProxyFactory, Pausable {
     return auctionInvited[msg.sender];
   }
 
-  function createAuction(address logic, uint256 tokenAmount, address tokenContractAddress) external whenNotPaused() {
+  function createAuction(
+    address logic,
+    uint256 tokenAmount,
+    address tokenContractAddress
+  ) external whenNotPaused() {
     address seller = msg.sender;
     bytes memory payload =
-      abi.encodeWithSignature(
-        'initialize(address,uint256,address)',
-        seller,
-        tokenAmount,
-        tokenContractAddress
-      );
+      abi.encodeWithSignature('initialize(address,uint256,address)', seller, tokenAmount, tokenContractAddress);
     address auction = deployMinimal(logic, payload);
     auctionAddresses.push(auction);
     auctionExists[auction] = true;

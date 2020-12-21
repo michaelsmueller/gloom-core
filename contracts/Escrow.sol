@@ -12,7 +12,6 @@ contract Escrow is Initializable {
   uint256 private tokenAmount;
   address private tokenContractAddress;
   uint256 private winningBid;
-
   uint256 private tokenBalance;
   uint256 private balance;
   bool private sellerOk;
@@ -40,7 +39,10 @@ contract Escrow is Initializable {
   }
 
   modifier onlyBuyerSellerAuctionEscrow {
-    require(msg.sender == buyer || msg.sender == seller || msg.sender == auction || msg.sender == address(this), 'Sender not authorized');
+    require(
+      msg.sender == buyer || msg.sender == seller || msg.sender == auction || msg.sender == address(this),
+      'Sender not authorized'
+    );
     _;
   }
 

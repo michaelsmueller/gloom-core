@@ -13,7 +13,7 @@ contract Auction is Initializable {
   uint256 private bidderDeposit;
   uint256 private tokenAmount;
   address private tokenContractAddress;
-
+  mapping(address => uint256) private balances;
   Escrow private escrow;
 
   enum Phase { Setup, Commit, Reveal, Deliver, Withdraw }
@@ -26,22 +26,16 @@ contract Auction is Initializable {
     bool isBidRevealed;
     bytes32 bidHex;
   }
-
   mapping(address => Bidder) private bidders;
   address[] private bidderAddresses;
 
-  mapping(address => uint256) private balances;
-
   event LogSellerDepositReceived(address indexed seller, uint256 sellerDeposit);
   event LogSellerDepositWithdrawn(address indexed seller, uint256 amount);
-
   event LogBidderDepositReceived(address indexed bidder, uint256 bidderDeposit);
   event LogBidderDepositWithdrawn(address indexed bidder, uint256 amount);
-
   event LogBidderInvited(address indexed bidder);
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
   event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
-
   event LogSetWinner(address indexed bidder, uint256 bid);
 
   modifier onlySeller {
@@ -101,7 +95,6 @@ contract Auction is Initializable {
     phase = Phase.Setup;
   }
 
-
   // PHASE CONTROL ONLY SELLER
 
   function startCommit() external onlySeller inSetup {
@@ -119,8 +112,8 @@ contract Auction is Initializable {
   }
 
   function startWithdraw() external onlySeller inDeliver {
-    require (escrow.bothOk(), 'Escrow incomplete');
-    require (escrow.startWithdraw(), 'Error starting escrow withdraw');
+    require(escrow.bothOk(), 'Escrow incomplete');
+    require(escrow.startWithdraw(), 'Error starting escrow withdraw');
     phase = Phase.Withdraw;
   }
 
@@ -129,14 +122,11 @@ contract Auction is Initializable {
     return keccak256(abi.encodePacked(address(this), data, salt));
   }
 
-
   // ALL PHASES PRIVATE
-    
+
   function isInvitedBidder(address bidderAddress) private view returns (bool) {
     return bidders[bidderAddress].isInvited;
   }
-
-
 
   // ALL PHASES ONLY SELLER
 
@@ -144,15 +134,11 @@ contract Auction is Initializable {
     return sellerDeposit;
   }
 
-
-
   // ALL PHASES ONLY BIDDER
 
   function getBidderDeposit() external view onlyBidder returns (uint256) {
     return bidderDeposit;
   }
-
-
 
   // ALL PHASES ONLY SELLER OR BIDDER
 
@@ -163,22 +149,17 @@ contract Auction is Initializable {
   function getAsset() external view onlySellerOrBidder returns (uint256, address) {
     return (tokenAmount, tokenContractAddress);
   }
-  
+
   function getWinner() external view onlySellerOrBidder returns (address, uint256) {
     uint256 winningBid = uint256(bidders[winner].bidHex);
     return (winner, winningBid);
   }
-
-
 
   // ALL PHASES ONLY SELLER OR WINNER
 
   function getEscrow() external view onlySellerOrWinner returns (Escrow) {
     return escrow;
   }
-
-
-
 
   // SETUP PHASE ONLY SELLER
 
@@ -208,8 +189,6 @@ contract Auction is Initializable {
     }
   }
 
-
-
   // COMMIT PHASE ONLY BIDDER
 
   function receiveBidderDeposit() private {
@@ -231,9 +210,7 @@ contract Auction is Initializable {
     commitBid(dataHash);
   }
 
-
   // REVEAL PHASE ONLY BIDDER
-
 
   function revealBid(bytes32 bidHex, bytes32 salt) external onlyBidder inReveal {
     require(bidders[msg.sender].isBidRevealed == false, 'Bid already revealed');
@@ -242,8 +219,6 @@ contract Auction is Initializable {
     bidders[msg.sender].bidHex = bidHex;
     emit LogBidRevealed(msg.sender, bidHex, salt);
   }
-
-
 
   // DELIVER PHASE INTERNAL TRIGGERED BY PHASE CONTROL ONLY SELLER
 
@@ -265,8 +240,6 @@ contract Auction is Initializable {
     bytes32 winningBid = bidders[winner].bidHex;
     escrow.initialize(seller, winner, tokenAmount, tokenContractAddress, winningBid);
   }
-
-
 
   // WITHDRAW PHASE ONLY SELLER OR BIDDER
 
