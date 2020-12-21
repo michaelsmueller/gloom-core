@@ -193,6 +193,7 @@ contract Auction is Initializable {
   }
 
   function startWithdraw() external onlySeller inDeliver {
+    require (escrow.bothOk(), 'Escrow incomplete');
     phase = Phase.Withdraw;
   }
 

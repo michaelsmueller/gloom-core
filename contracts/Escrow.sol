@@ -33,6 +33,11 @@ contract Escrow is Initializable {
     _;
   }
 
+  modifier onlyBuyerSellerAuctionEscrow {
+    require(msg.sender == buyer || msg.sender == seller || msg.sender == auction || msg.sender == address(this), 'Sender not authorized');
+    _;
+  }
+
   event LogSellerDelivered(address indexed seller, uint256 tokenAmount);
   event LogBuyerPaid(address indexed buyer, uint256 amount);
   event LogSellerWithdrew(address indexed seller, uint256 amount);
@@ -79,7 +84,7 @@ contract Escrow is Initializable {
     emit LogBuyerPaid(msg.sender, msg.value);
   }
 
-  function bothOk() public view onlySellerOrBuyer returns (bool) {
+  function bothOk() public view onlyBuyerSellerAuctionEscrow returns (bool) {
     return sellerOk && buyerOk;
   }
 
