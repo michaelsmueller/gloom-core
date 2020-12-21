@@ -17,6 +17,7 @@ contract Escrow is Initializable {
   uint256 private balance;
   bool private sellerOk;
   bool private buyerOk;
+  bool private withdrawOk;
 
   modifier onlySeller {
     require(msg.sender == seller, 'Sender not authorized');
@@ -30,6 +31,11 @@ contract Escrow is Initializable {
 
   modifier onlySellerOrBuyer {
     require(msg.sender == seller || msg.sender == buyer, 'Sender not authorized');
+    _;
+  }
+
+  modifier onlyAuction {
+    require(msg.sender == auction, 'Sender not authorized');
     _;
   }
 
@@ -88,8 +94,13 @@ contract Escrow is Initializable {
     return sellerOk && buyerOk;
   }
 
+  function startWithdraw() external onlyAuction returns (bool) {
+    return withdrawOk = true;
+  }
+
   function sellerWithdraw() external payable onlySeller {
     require(bothOk(), 'Escrow is not complete');
+    require(withdrawOk, 'Action not authorized now');
     require(address(this).balance >= winningBid, 'Insufficient balance');
     balance -= winningBid;
     (bool success, ) = msg.sender.call.value(winningBid)('');
@@ -99,6 +110,7 @@ contract Escrow is Initializable {
 
   function buyerWithdraw() external onlyBuyer {
     require(bothOk(), 'Escrow is not complete');
+    require(withdrawOk, 'Action not authorized now');
     require(IERC20(tokenContractAddress).balanceOf(address(this)) >= tokenAmount, 'Insufficient balance');
     tokenBalance -= tokenAmount;
     require(IERC20(tokenContractAddress).transfer(msg.sender, tokenAmount), 'Transfer failed');

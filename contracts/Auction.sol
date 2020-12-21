@@ -22,7 +22,6 @@ contract Auction is Initializable {
 
   struct Bidder {
     bool isInvited;
-    uint256 balance;
     bytes32 bidCommit;
     uint64 bidCommitBlock;
     bool isBidRevealed;
@@ -102,6 +101,28 @@ contract Auction is Initializable {
   }
 
 
+  // PHASE CONTROL ONLY SELLER
+
+  function startCommit() external onlySeller inSetup {
+    phase = Phase.Commit;
+  }
+
+  function startReveal() public onlySeller inCommit {
+    phase = Phase.Reveal;
+  }
+
+  function startDeliver() external onlySeller inReveal {
+    phase = Phase.Deliver;
+    setWinner();
+    deployEscrow();
+  }
+
+  function startWithdraw() external onlySeller inDeliver {
+    require (escrow.bothOk(), 'Escrow incomplete');
+    require (escrow.startWithdraw(), 'Error starting escrow withdraw');
+    phase = Phase.Withdraw;
+  }
+
   // public function, triggered by bidder in frontend in Commit phase and internally in Reveal phase
   function getSaltedHash(bytes32 data, bytes32 salt) public view returns (bytes32) {
     return keccak256(abi.encodePacked(address(this), data, salt));
@@ -159,28 +180,6 @@ contract Auction is Initializable {
     return escrow;
   }
 
-
-
-  // PHASE CONTROL ONLY SELLER
-
-  function startCommit() external onlySeller inSetup {
-    phase = Phase.Commit;
-  }
-
-  function startReveal() public onlySeller inCommit {
-    phase = Phase.Reveal;
-  }
-
-  function startDeliver() external onlySeller inReveal {
-    phase = Phase.Deliver;
-    setWinner();
-    deployEscrow();
-  }
-
-  function startWithdraw() external onlySeller inDeliver {
-    require (escrow.bothOk(), 'Escrow incomplete');
-    phase = Phase.Withdraw;
-  }
 
 
 
