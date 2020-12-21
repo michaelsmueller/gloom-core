@@ -7,18 +7,18 @@ import './AuctionFactory.sol';
 import './Escrow.sol';
 
 contract Auction is Initializable {
-  address public factory;
-  address payable public seller;
-  address public winner;
-  uint256 public sellerDeposit;
-  uint256 public bidderDeposit;
-  uint256 public tokenAmount;
-  address public tokenContractAddress;
+  address private factory;
+  address payable private seller;
+  address private winner;
+  uint256 private sellerDeposit;
+  uint256 private bidderDeposit;
+  uint256 private tokenAmount;
+  address private tokenContractAddress;
 
-  Escrow public escrow;
+  Escrow private escrow;
 
   enum Phase { Setup, Commit, Reveal, Deliver, Withdraw }
-  Phase public phase;
+  Phase private phase;
 
   struct Bidder {
     bool isInvited;
@@ -28,8 +28,10 @@ contract Auction is Initializable {
     bytes32 bidHex;
   }
 
-  mapping(address => Bidder) public bidders;
-  address[] public bidderAddresses;
+  mapping(address => Bidder) private bidders;
+  address[] private bidderAddresses;
+
+  mapping(address => uint256) private balances;
 
   event LogSellerDepositReceived(address indexed seller, uint256 sellerDeposit);
   event LogSellerDepositWithdrawn(address indexed seller, uint256 amount);
@@ -107,7 +109,7 @@ contract Auction is Initializable {
     phase = Phase.Commit;
   }
 
-  function startReveal() public onlySeller inCommit {
+  function startReveal() external onlySeller inCommit {
     phase = Phase.Reveal;
   }
 
@@ -138,10 +140,6 @@ contract Auction is Initializable {
 
 
   // ALL PHASES ONLY SELLER
-
-  function getBalance() external view onlySeller returns (uint256) {
-    return address(this).balance;
-  }
 
   function getSellerDeposit() external view onlySeller returns (uint256) {
     return sellerDeposit;
@@ -187,6 +185,7 @@ contract Auction is Initializable {
 
   function receiveSellerDeposit() external payable onlySeller inSetup {
     sellerDeposit = msg.value;
+    balances[msg.sender] += msg.value;
     emit LogSellerDepositReceived(msg.sender, msg.value);
   }
 
@@ -217,7 +216,7 @@ contract Auction is Initializable {
   function receiveBidderDeposit() private {
     // consider using initialize or other modifier to prevent bidder from changing deposit
     require(msg.value == bidderDeposit, 'Deposit is not required amount');
-    bidders[msg.sender].balance += msg.value;
+    balances[msg.sender] += msg.value;
     emit LogBidderDepositReceived(msg.sender, msg.value);
   }
 
@@ -273,17 +272,18 @@ contract Auction is Initializable {
   // WITHDRAW PHASE ONLY SELLER OR BIDDER
 
   function withdrawSellerDeposit() external payable onlySeller inWithdraw {
-    require(address(this).balance >= sellerDeposit, 'Insufficient balance');
+    require(balances[msg.sender] >= sellerDeposit, 'Insufficient balance');
+    balances[msg.sender] -= sellerDeposit;
     (bool success, ) = msg.sender.call.value(sellerDeposit)('');
     require(success, 'Transfer failed');
     emit LogSellerDepositWithdrawn(msg.sender, sellerDeposit);
   }
 
   function withdrawBidderDeposit() external payable onlyBidder inWithdraw {
-    require(address(this).balance >= bidderDeposit, 'Insufficient balance');
-    (bool success, ) = msg.sender.call.value(sellerDeposit)('');
+    require(balances[msg.sender] >= bidderDeposit, 'Insufficient balance');
+    balances[msg.sender] -= bidderDeposit;
+    (bool success, ) = msg.sender.call.value(bidderDeposit)('');
     require(success, 'Transfer failed');
     emit LogBidderDepositWithdrawn(msg.sender, bidderDeposit);
   }
-
 }

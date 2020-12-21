@@ -10,7 +10,10 @@ contract('Auction', accounts => {
   const bidder1 = accounts[2];
   const bidder2 = accounts[3];
   const attacker = accounts[9];
+
   const DEPOSIT = web3.utils.toWei('1', 'ether');
+  const DEPOSIT_BN = new BN(DEPOSIT);
+
   const TOKENS = new BN(100);
   const DECIMALS = new BN(18);
   const TEN = new BN(10);
@@ -35,9 +38,13 @@ contract('Auction', accounts => {
   });
 
   it('should store the seller deposit amount', async () => {
-    await auctionInstance.receiveSellerDeposit({ from: seller, value: DEPOSIT });
-    const depositedAmount = await auctionInstance.sellerDeposit.call();
-    assert.equal(DEPOSIT, depositedAmount);
+    const tx = await auctionInstance.receiveSellerDeposit({ from: seller, value: DEPOSIT });
+    let sellerDeposit;
+    truffleAssert.eventEmitted(tx, 'LogSellerDepositReceived', event => {
+      sellerDeposit = event.sellerDeposit;
+      return event.seller === seller;
+    });
+    assert(sellerDeposit.eq(DEPOSIT_BN), 'incorrect deposit amount');
   });
 
   it('should not accept a deposit from someone other than seller', async () => {
@@ -50,13 +57,6 @@ contract('Auction', accounts => {
   it('should allow seller to set up bidders', async () => {
     const bidderAddresses = [bidder1, bidder2];
     await auctionInstance.setupBidders(DEPOSIT, bidderAddresses, { from: seller });
-  });
-
-  it('should store the bidder deposit amount', async () => {
-    const bidderAddresses = [bidder1, bidder2];
-    await auctionInstance.setupBidders(DEPOSIT, bidderAddresses, { from: seller });
-    const bidderDeposit = await auctionInstance.bidderDeposit.call();
-    assert.equal(DEPOSIT, bidderDeposit);
   });
 
   it('should not allow someone other than seller to set up bidders', async () => {

@@ -44,13 +44,13 @@ contract('AuctionFactory', accounts => {
       createdAuction = event.auction;
       return event;
     });
-    const addresses = await factoryInstance.getAddresses();
+    const addresses = await factoryInstance.getAddresses({ from: admin });
     assert.isTrue(addresses.includes(createdAuction));
   });
 
   it('should register bidder when bidder is set up at auction instance', async () => {
     await createAuction();
-    const addresses = await factoryInstance.getAddresses();
+    const addresses = await factoryInstance.getAddresses({ from: admin });
     const auctionInstance = await Auction.at(addresses[0]);
     await auctionInstance.setupBidders(DEPOSIT, [bidder], { from: seller });
     const isInvited = await factoryInstance.getAuctionInvited({ from: bidder });

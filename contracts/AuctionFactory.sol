@@ -7,9 +7,9 @@ import './Auction.sol';
 contract AuctionFactory is ProxyFactory {
   address public admin;
   address[] private auctionAddresses;
-  mapping(address => bool) public auctionExists;
-  mapping(address => address) public auctionBy;
-  mapping(address => address) public auctionInvited;
+  mapping(address => bool) private auctionExists;
+  mapping(address => address) private auctionBy;
+  mapping(address => address) private auctionInvited;
 
   event LogAuctionCreated(address indexed auction, address indexed seller);
   event LogBidderRegistered(address indexed auction, address indexed bidder);
@@ -18,7 +18,12 @@ contract AuctionFactory is ProxyFactory {
     admin = msg.sender;
   }
 
-  function getAddresses() external view returns (address[] memory) {
+  modifier onlyAdmin {
+    require(msg.sender == admin, 'Sender not authorized');
+    _;
+  }
+
+  function getAddresses() external view onlyAdmin returns (address[] memory) {
     return auctionAddresses;
   }
 
