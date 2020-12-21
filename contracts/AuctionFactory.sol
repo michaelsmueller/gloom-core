@@ -2,9 +2,10 @@
 pragma solidity ^0.5.3;
 
 import '@openzeppelin/upgrades/contracts/upgradeability/ProxyFactory.sol';
+import '@openzeppelin/contracts/lifecycle/Pausable.sol';
 import './Auction.sol';
 
-contract AuctionFactory is ProxyFactory {
+contract AuctionFactory is ProxyFactory, Pausable {
   address public admin;
   address[] private auctionAddresses;
   mapping(address => bool) private auctionExists;
@@ -14,13 +15,21 @@ contract AuctionFactory is ProxyFactory {
   event LogAuctionCreated(address indexed auction, address indexed seller);
   event LogBidderRegistered(address indexed auction, address indexed bidder);
 
-  constructor() public {
+  constructor() public Pausable() {
     admin = msg.sender;
   }
 
   modifier onlyAdmin {
     require(msg.sender == admin, 'Sender not authorized');
     _;
+  }
+
+  function pauseFactory() external onlyAdmin {
+    pause();
+  }
+
+  function unpauseFactory() external onlyAdmin {
+    unpause();
   }
 
   function getAddresses() external view onlyAdmin returns (address[] memory) {
@@ -35,7 +44,7 @@ contract AuctionFactory is ProxyFactory {
     return auctionInvited[msg.sender];
   }
 
-  function createAuction(address logic, uint256 tokenAmount, address tokenContractAddress) external {
+  function createAuction(address logic, uint256 tokenAmount, address tokenContractAddress) external whenNotPaused() {
     address seller = msg.sender;
     bytes memory payload =
       abi.encodeWithSignature(

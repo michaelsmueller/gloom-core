@@ -56,4 +56,9 @@ contract('AuctionFactory', accounts => {
     const isInvited = await factoryInstance.getAuctionInvited({ from: bidder });
     assert(isInvited);
   });
+
+  it('should allow admin to pause to stop ability to deploy new auctions', async () => {
+    await factoryInstance.pauseFactory({ from: admin });
+    await truffleAssert.reverts(createAuction(), 'Pausable: paused');
+  });
 });

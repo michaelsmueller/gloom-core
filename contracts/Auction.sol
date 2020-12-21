@@ -2,7 +2,6 @@
 pragma solidity ^0.5.3;
 
 import '@openzeppelin/upgrades/contracts/Initializable.sol';
-import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import './AuctionFactory.sol';
 import './Escrow.sol';
 
