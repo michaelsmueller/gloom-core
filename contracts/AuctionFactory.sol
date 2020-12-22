@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.3;
+pragma solidity 0.5.3;
 
 import '@openzeppelin/upgrades/contracts/upgradeability/ProxyFactory.sol';
 import '@openzeppelin/contracts/lifecycle/Pausable.sol';

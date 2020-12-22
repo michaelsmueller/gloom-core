@@ -1,18 +1,13 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const path = require('path');
-// const dotenv = require('dotenv');
-// dotenv.config();
-// const { MNEMONIC, PROJECT_ID } = process.env;
-
-const mnemonic = 'CENSORED';
-
-// console.log('__dirname', __dirname);
+const dotenv = require('dotenv');
+dotenv.config();
+const { MNEMONIC, PROJECT_ID } = process.env;
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
   contracts_build_directory: path.join(__dirname, '../gloom-interface/src/contracts'),
-  // contracts_build_directory: path.join(__dirname, 'src/contracts'),
   networks: {
     development: {
       host: '127.0.0.1',
@@ -22,9 +17,9 @@ module.exports = {
     kovan: {
       provider: function () {
         return new HDWalletProvider(
-          mnemonic,
-          // `https://kovan.infura.io/v3/658ac54d0a4e41ddb61fbcaf9ab2c666`
-          `wss://kovan.infura.io/ws/v3/658ac54d0a4e41ddb61fbcaf9ab2c666`,
+          MNEMONIC,
+          // `https://kovan.infura.io/v3/${PROJECT_ID}`
+          `wss://kovan.infura.io/ws/v3/${PROJECT_ID}`,
         );
       },
       // gas: 80000000,
@@ -44,19 +39,19 @@ module.exports = {
       networkCheckTimeout: 1000000,
     },
   },
-  // compilers: {
-  //   solc: {
-  //     version: '0.5.3',
-  //     // version: '0.6.2',
-  //     parser: 'solcjs', // Leverages solc-js purely for speedy parsing
-  //     // settings: {
-  //     // optimizer: {
-  //     // enabled: true,
-  //     // runs: 1500,
-  //     // },
-  //     // evmVersion: 'istanbul',
-  //     evmVersion: 'constantinople',
-  //     // },
-  //   },
-  // },
+  compilers: {
+    solc: {
+      version: '0.5.3',
+      // version: '0.6.2',
+      parser: 'solcjs', // Leverages solc-js purely for speedy parsing
+      // settings: {
+      // optimizer: {
+      // enabled: true,
+      // runs: 1500,
+      // },
+      // evmVersion: 'istanbul',
+      evmVersion: 'constantinople',
+      // },
+    },
+  },
 };

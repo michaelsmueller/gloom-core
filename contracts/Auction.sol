@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.3;
+pragma solidity 0.5.3;
 
 import '@openzeppelin/upgrades/contracts/Initializable.sol';
 import './AuctionFactory.sol';
@@ -37,6 +37,7 @@ contract Auction is Initializable {
   event LogBidCommitted(address indexed bidder, bytes32 bidHash, uint256 bidCommitBlock);
   event LogBidRevealed(address indexed bidder, bytes32 bidHex, bytes32 salt);
   event LogSetWinner(address indexed bidder, uint256 bid);
+  event LogPhaseChangeTo(string phase);
 
   modifier onlySeller {
     require(msg.sender == seller, 'Sender not authorized');
@@ -99,22 +100,26 @@ contract Auction is Initializable {
 
   function startCommit() external onlySeller inSetup {
     phase = Phase.Commit;
+    emit LogPhaseChangeTo('Commit');
   }
 
   function startReveal() external onlySeller inCommit {
     phase = Phase.Reveal;
+    emit LogPhaseChangeTo('Reveal');
   }
 
   function startDeliver() external onlySeller inReveal {
     phase = Phase.Deliver;
     setWinner();
     deployEscrow();
+    emit LogPhaseChangeTo('Deliver');
   }
 
   function startWithdraw() external onlySeller inDeliver {
     require(escrow.bothOk(), 'Escrow incomplete');
     require(escrow.startWithdraw(), 'Error starting escrow withdraw');
     phase = Phase.Withdraw;
+    emit LogPhaseChangeTo('Withdraw');
   }
 
   // public function, triggered by bidder in frontend in Commit phase and internally in Reveal phase
@@ -130,24 +135,30 @@ contract Auction is Initializable {
 
   // ALL PHASES ONLY SELLER
 
-  function getSellerDeposit() external view onlySeller returns (uint256) {
-    return sellerDeposit;
-  }
-
-  // ALL PHASES ONLY BIDDER
-
-  function getBidderDeposit() external view onlyBidder returns (uint256) {
-    return bidderDeposit;
+  function getBidders() external view onlySeller returns (address[] memory) {
+    return bidderAddresses;
   }
 
   // ALL PHASES ONLY SELLER OR BIDDER
 
-  function getPhase() external view onlySellerOrBidder returns (Phase) {
-    return phase;
+  function getPhase() external view onlySellerOrBidder returns (string memory) {
+    if (phase == Phase.Setup) return 'Setup';
+    if (phase == Phase.Commit) return 'Commit';
+    if (phase == Phase.Reveal) return 'Reveal';
+    if (phase == Phase.Deliver) return 'Deliver';
+    if (phase == Phase.Withdraw) return 'Withdraw';
   }
 
   function getAsset() external view onlySellerOrBidder returns (uint256, address) {
     return (tokenAmount, tokenContractAddress);
+  }
+
+  function getSellerDeposit() external view onlySellerOrBidder returns (uint256) {
+    return sellerDeposit;
+  }
+
+  function getBidderDeposit() external view onlySellerOrBidder returns (uint256) {
+    return bidderDeposit;
   }
 
   function getWinner() external view onlySellerOrBidder returns (address, uint256) {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.3;
+pragma solidity 0.5.3;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/upgrades/contracts/Initializable.sol';
@@ -79,9 +79,9 @@ contract Escrow is Initializable {
   }
 
   function sellerDelivery() external onlySeller {
-    require(IERC20(tokenContractAddress).transferFrom(msg.sender, address(this), tokenAmount), 'Transfer failed');
     tokenBalance += tokenAmount;
     sellerOk = true;
+    require(IERC20(tokenContractAddress).transferFrom(msg.sender, address(this), tokenAmount), 'Transfer failed');
     emit LogSellerDelivered(msg.sender, tokenAmount);
   }
 
